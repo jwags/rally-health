@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= name %></title>
+    <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
+    <!--  Build Date: <%= new Date() %> -->
+    <script type="text/javascript" src="/apps/<%= sdk %>/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function() {
+            <%= js_contents %>
+            
+               Rally.launchApp('<%= className %>', {
+                   name: '<%= name %>'
+               });
+        });
+    </script>
+    
+    
+<%
+    for ( var i=0, len = css_files.length; i < len; i++ ) {
+        print('<link rel="stylesheet" type="text/css" href="' + css_files[i] + '">');
+    }
+%>
+
+</head>
+<body></body>
+</html>
