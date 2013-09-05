@@ -12,7 +12,7 @@ module.exports = function(grunt) {
         config.js_contents = config.js_contents + "\n" + grunt.file.read(config.js_files[i]);
     }
     
-    config.scratch_files = ["src/javascript/ts_logger.js"
+    config.scratch_files = ["src/javascript/_ts-logger.js"
     ];
     config.scratch_contents = " ";
     for (var i=0;i<config.scratch_files.length;i++) {

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites>
+
+  <testsuite name="Fast Project Model tests When creating new project models" errors="0" tests="4" failures="0" time="0.015" timestamp="2013-09-05T15:57:17.785Z">
+    
+      <testcase assertions="4" classname="Fast Project Model tests When creating new project models" name="should set defaults" time="0.005">
+        
+      </testcase>
+    
+      <testcase assertions="4" classname="Fast Project Model tests When creating new project models" name="should set easy values" time="0">
+        
+      </testcase>
+    
+      <testcase assertions="5" classname="Fast Project Model tests When creating new project models" name="should set associations" time="0.005">
+        
+      </testcase>
+    
+      <testcase assertions="1" classname="Fast Project Model tests When creating new project models" name="should use App to create a structured list of projects" time="0">
+        
+      </testcase>
+    
+  </testsuite>
+
+</testsuites>

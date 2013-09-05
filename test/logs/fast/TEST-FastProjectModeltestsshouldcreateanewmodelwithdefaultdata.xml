@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites>
+
+  <testsuite name="Fast Project Model tests should create a new model with default data" errors="0" tests="1" failures="1" time="0.006" timestamp="2013-09-05T03:01:02.847Z">
+    
+      <testcase assertions="1" classname="Fast Project Model tests should create a new model with default data" name="encountered a declaration exception" time="0.004">
+        
+          <failure>TypeError: 'null' is not a constructor (evaluating 'new c(a[0])')</failure>
+        
+      </testcase>
+    
+  </testsuite>
+
+</testsuites>
