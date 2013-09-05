@@ -42,7 +42,6 @@ Ext.define('Rally.technicalservices.util.Utilities', {
     hashToOrderedArray: function(hash,child_field_name) {
         var me = this;
         var the_array = [hash];
-        console.log("hashToOrderedArray",hash,child_field_name);
         
         var kids = hash[child_field_name];
         Ext.Array.each(kids, function(kid){
@@ -54,7 +53,6 @@ Ext.define('Rally.technicalservices.util.Utilities', {
             the_array = Ext.Array.merge(the_array,kid_array);
         });
         
-        console.log('returning',the_array);
         return the_array;
     }
 });

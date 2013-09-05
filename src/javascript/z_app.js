@@ -56,7 +56,7 @@ Ext.define('CustomApp', {
         this.grid = Ext.create('Rally.ui.grid.Grid',{
             store: store,
             height: 400,
-            columnCfgs: [{text:'Name',dataIndex:'Name',flex: 1}]
+            columnCfgs: [{text:'Project',dataIndex:'Name',flex: 1}]
         });
         this.down('#grid_box').add(this.grid);
     }
