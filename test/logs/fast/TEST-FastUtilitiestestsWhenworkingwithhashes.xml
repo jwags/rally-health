@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <testsuites>
 
-  <testsuite name="Fast Utilities tests When working with hashes" errors="0" tests="3" failures="0" time="0.005" timestamp="2013-09-05T18:57:29.308Z">
+  <testsuite name="Fast Utilities tests When working with hashes" errors="0" tests="4" failures="0" time="0.003" timestamp="2013-09-06T17:11:18.456Z">
     
-      <testcase assertions="2" classname="Fast Utilities tests When working with hashes" name="should turn a hash into an array" time="0.002">
+      <testcase assertions="2" classname="Fast Utilities tests When working with hashes" name="should turn a hash into an array" time="0">
         
       </testcase>
     
@@ -11,7 +11,11 @@
         
       </testcase>
     
-      <testcase assertions="3" classname="Fast Utilities tests When working with hashes" name="should turn a top node into an ordered array" time="0">
+      <testcase assertions="6" classname="Fast Utilities tests When working with hashes" name="should turn a top node into an ordered array" time="0.001">
+        
+      </testcase>
+    
+      <testcase assertions="4" classname="Fast Utilities tests When working with hashes" name="should get a node by ObjectID" time="0.001">
         
       </testcase>
     

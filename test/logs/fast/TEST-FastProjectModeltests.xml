@@ -1,31 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <testsuites>
 
-  <testsuite name="Fast Project Model tests" errors="0" tests="6" failures="0" time="0.017" timestamp="2013-09-05T18:57:29.302Z">
-    
-      <testcase assertions="4" classname="Fast Project Model tests" name="should set defaults" time="0.005">
-        
-      </testcase>
-    
-      <testcase assertions="6" classname="Fast Project Model tests" name="should set easy values" time="0.001">
-        
-      </testcase>
-    
-      <testcase assertions="5" classname="Fast Project Model tests" name="should set associations" time="0.006">
-        
-      </testcase>
-    
-      <testcase assertions="1" classname="Fast Project Model tests" name="should use utility to create a structured list of projects" time="0">
-        
-      </testcase>
-    
-      <testcase assertions="2" classname="Fast Project Model tests" name="should use utility to create a structured list of projects with an added root" time="0.001">
-        
-      </testcase>
-    
-      <testcase assertions="4" classname="Fast Project Model tests" name="should return a hash via getData" time="0.001">
-        
-      </testcase>
+  <testsuite name="Fast Project Model tests" errors="0" tests="0" failures="0" time="" timestamp="">
     
   </testsuite>
 

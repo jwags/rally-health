@@ -36,17 +36,19 @@ Ext.define('Rally.technicalservices.util.Utilities', {
     },
     /*
      * Given a hash that represents an item with children, return
-     * an array of the items with the items exploded (in order, top down)
+     * an array of the items with the items exploded (in order, top down (follow a branch then come back to next branch))
      * 
+     * That is, order is parent 1, child 1a, child 1b, parent 2, child 2a
      */
     hashToOrderedArray: function(hash,child_field_name) {
         var me = this;
         var the_array = [hash];
         
         var kids = hash[child_field_name];
-        Ext.Array.each(kids, function(kid){
-            the_array.push(kid);
-        });
+// add this back if we want the order to be parent 1, parent 2, child 1a, child 1b, child 2a
+//        Ext.Array.each(kids, function(kid){
+//            the_array.push(kid);
+//        });
         
         Ext.Array.each(kids, function(kid){
             var kid_array = me.hashToOrderedArray(kid,child_field_name);
@@ -54,5 +56,39 @@ Ext.define('Rally.technicalservices.util.Utilities', {
         });
         
         return the_array;
+    },
+    /**
+     * Given a hash with nested hashes of similar strucure (nested by field "children"), 
+     * find the item in the hash 
+     *   where the given field has the given value
+     */
+    getFromHashByField: function(hash,by_field_name,by_field_value){
+        var me = this;
+        var result = null;
+        if (hash[by_field_name] == by_field_value) {
+            return hash;
+        }
+        if ( hash.children ) {
+            Ext.Array.each(hash.children,function(child){
+                result = me.getFromHashByField(child,by_field_name,by_field_value);
+                if (result) {
+                    return false;
+                }
+            });
+        }
+        return result;
+    },
+    /** 
+     * Given an array ot TSProjects, get one out of the array by its ID
+     */
+    getProjectById: function(project_array,object_id) {
+        var result = null;
+        var field_name = "ObjectID";
+        Ext.Array.each(project_array, function(project) {
+            if (project.get(field_name) == object_id) {
+                result = project;
+            }
+        });
+        return result;
     }
 });

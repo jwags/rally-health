@@ -6,6 +6,8 @@ Ext.define('CustomApp', {
     launch: function() {
         var me = this;
         this.logger.log(this,this.getContext());
+        var selected_project_oid = this.getContext().getProject().ObjectID;
+        this.logger.log(selected_project_oid);
         
         Ext.create('Rally.data.WsapiDataStore',{
             model:'Project',
@@ -15,7 +17,12 @@ Ext.define('CustomApp', {
                     this.logger.log(this,projects);
                     var ts_project_hash = this._makeTSProjectHash(projects);
                     var ts_project_array = Rally.technicalservices.util.Utilities.structureProjects(ts_project_hash,true);
-                    var grid_array = Rally.technicalservices.util.Utilities.hashToOrderedArray(ts_project_array[0].getData(true),"children");
+                    this.logger.log(this,"project array",ts_project_array);
+                    
+                    var ts_selected_hash = Rally.technicalservices.util.Utilities.getProjectById(ts_project_array,selected_project_oid);
+                    this.logger.log(this,"selected",ts_selected_hash);
+                    
+                    var grid_array = Rally.technicalservices.util.Utilities.hashToOrderedArray(ts_selected_hash.getData(true),"children");
                     this._makeGrid(grid_array);
                 },
                 scope: this
