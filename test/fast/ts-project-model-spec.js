@@ -41,9 +41,86 @@ describe("Fast Project Model tests",function(){
             expect(parent).not.toBe(null);
             expect(child).not.toBe(null);
             expect(parent.get('children').length).toEqual(2);
+            expect(parent.get('child_count')).toEqual(2);
             expect(child.get('parent_id')).toEqual(1234);
             expect(child2.get('parent_id')).toEqual(1234);
         });
+    });
+    describe("When adding iteration data to models",function(){
+        it('should calculate percentage of cards estimated',function() {
+            var project = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Child',
+                ObjectID: 1235
+            });
+            
+            expect(project.get('health_ratio_estimated')).toEqual(0);
+            var story1 = Ext.create('mockStory',{ PlanEstimate: 5 });
+            var story2 = Ext.create('mockStory',{ PlanEstimate: 2 });
+            project.setIterationArtifacts([story1,story2]);
+            expect(project.get('health_ratio_estimated')).toEqual(1);
+        });
+        it('should calculate percentage of cards estimated without failing on nulls',function() {
+            var project = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Child',
+                ObjectID: 1235
+            });
+            
+            expect(project.get('health_ratio_estimated')).toEqual(0);
+            var story1 = Ext.create('mockStory',{ PlanEstimate: 5 });
+            var story2 = Ext.create('mockStory',{ PlanEstimate: 2 });
+            var story3 = Ext.create('mockStory',{ PlanEstimate: 0 });
+            var story4 = Ext.create('mockStory',{ PlanEstimate: null });
+            project.setIterationArtifacts([story1,story2,story3,story4]);
+            expect(project.get('health_ratio_estimated')).toEqual(0.5);
+        });
+        it('should not calculate a percentage for parents',function() {
+            var child = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Child',
+                ObjectID: 1235
+            });
+            
+            var parent = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Parent',
+                ObjectID: 1236
+            });
+            
+            parent.addChild(child);
+            
+            var story1 = Ext.create('mockStory',{ PlanEstimate: 5 });
+            var story2 = Ext.create('mockStory',{ PlanEstimate: 2 });
+
+            parent.setIterationArtifacts([story1,story2]);
+            child.setIterationArtifacts([story1,story2]);
+            expect(child.get('health_ratio_estimated')).toEqual(1);
+            expect(parent.get('health_ratio_estimated')).toEqual(-1);
+            
+        });
+        
+        it('should reset health measures',function() {
+            var child = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Child',
+                ObjectID: 1235
+            });
+            
+            var parent = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Parent',
+                ObjectID: 1236
+            });
+            
+            parent.addChild(child);
+            
+            var story1 = Ext.create('mockStory',{ PlanEstimate: 5 });
+            var story2 = Ext.create('mockStory',{ PlanEstimate: 2 });
+
+            parent.setIterationArtifacts([story1,story2]);
+            child.setIterationArtifacts([story1,story2]);
+            
+            parent.resetHealth();
+            child.resetHealth();
+            expect(child.get('health_ratio_estimated')).toEqual(0);
+            expect(parent.get('health_ratio_estimated')).toEqual(-1);
+        });
+        
     });
     
     describe("When combined with _ts-utilities.js", function(){

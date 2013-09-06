@@ -3,7 +3,7 @@
 <head>
     <title>Health Check</title>
     <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Fri Sep 06 2013 12:24:28 GMT-0700 (PDT) -->
+    <!--  Build Date: Fri Sep 06 2013 15:52:06 GMT-0700 (PDT) -->
     <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
@@ -40,6 +40,30 @@ Ext.define('Rally.technicalservices.logger',{
         window.console && console.log.apply(console,output_args);
     }
 
+});
+Ext.define('TSRenderers', {
+    singleton: true,
+    red: '#ff9999',
+    yellow: '#ffffcc',
+    green: '#ccffcc',
+    defaultF: function(value,metaData,record,rowIndex,colIndex,store,view){
+        return value;
+    },
+    estimateHealth: function(value) {
+        if ( value < 0 ) {
+            return " ";
+        }
+        var percent = parseInt( 100 * value, 10 );
+        var color = TSRenderers.green;
+        if ( percent < 91 ) {
+            color = TSRenderers.yellow;
+        }
+        if ( percent < 61 ) {
+            color = TSRenderers.red;
+        }
+        return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
+    }
+    
 });
 Ext.define('Rally.technicalservices.util.Utilities', {
     singleton: true,
@@ -156,13 +180,18 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'Name',type:'string'},
         {name:'parent_id',type:'int'},
         {name:'id',type:'int',convert:useObjectID},
-        {name:'text',type:'string',convert:useName}
+        {name:'text',type:'string',convert:useName},
+        /*  following values are calculated */
+        {name:'child_count',type:'int',defaultValue:0},
+        {name:'health_ratio_estimated',type:'float',defaultValue:0}
     ],
     hasMany:[{model:'Rally.technicalservices.ProjectModel', name:'children'}],
     associations: [
         {type:'belongsTo',model:'Rally.technicalservices.ProjectModel', setterName: 'setParent', getterName:'getParent', primaryKey:'ObjectID',foreignKey:'parent_id'}
     ],
     addChild: function(child) {
+        this.set('health_ratio_estimated',-1);
+        
         if ( child.get('parent_id') !== this.get('ObjectID') ) {
             child.setParent(this.get('ObjectID'));
         }
@@ -173,6 +202,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         } else {
             this.set('children',[child]);
         }
+        this.set('child_count',this.get('children').length);
     },
     /**
      * override because we just want the kids without going through a load process
@@ -184,6 +214,38 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             children.push(kid.getData(true));
         });
         return { 'children': children };
+    },
+    /**
+     * Given an array of artifacts (stories and defects), calculate some health metrics
+     * 
+     */
+    setIterationArtifacts: function(artifacts){
+        // parents don't roll up.  set to -1
+        if ( this.get('child_count')  > 0 ) {
+            this.set('health_ratio_estimated',-1);
+        } else {
+            var plan_estimate_total = 0;
+            var count_of_estimated_artifacts = 0;
+            
+            Ext.Array.each(artifacts,function(artifact){
+                var plan_estimate = artifact.get('PlanEstimate') || 0;
+                plan_estimate_total += plan_estimate;
+                if ( plan_estimate > 0 ) {
+                    count_of_estimated_artifacts++;
+                }
+            });
+            
+            if ( artifacts.length > 0 ) {
+                this.set('health_ratio_estimated',(count_of_estimated_artifacts/artifacts.length));
+            }
+        }
+    },
+    resetHealth: function() {
+        if ( this.get('children') && this.get('children').length > 0 ) {
+            this.set('health_ratio_estimated',-1);
+        } else {
+            this.set('health_ratio_estimated',0);
+        }
     }
 });
 /*
@@ -193,21 +255,34 @@ Ext.define('Rally.technicalservices.ProjectModel',{
 Ext.define('Rally.technicalservices.ProjectStore',{
     extend: 'Rally.data.custom.Store',
     alias: 'store.projectree',
-    model: 'Rally.technicalservices.ProjectModel'
+    model: 'Rally.technicalservices.ProjectModel',
     
+    getRecords: function() {
+        var items = [];
+        this.each(function(storeItem) {
+            items.push(storeItem);
+        });
+        return items;
+    },
+    
+    getModelType: function() {
+        return this.model.getName();
+    }
 });
 Ext.define('CustomApp', {
     extend: 'Rally.app.App',
     componentCls: 'app',
     logger: new Rally.technicalservices.logger(),
     items: [ { xtype:'container',itemId:'selector_box', padding: 5, layout: { type:'hbox'} }, { xtype:'container', itemId:'grid_box', padding: 5 } ],
+    _selected_timebox: null,
+    _project_store: null,
     launch: function() {
         this._getProjects();
         this._addIterationSelector();
     },
     _getProjects: function() {
         var me = this;
-        this.project_array = null;
+        this._projects = [];
         var selected_project_oid = this.getContext().getProject().ObjectID;
         
         Ext.create('Rally.data.WsapiDataStore',{
@@ -218,9 +293,13 @@ Ext.define('CustomApp', {
                     var ts_project_hash = this._makeTSProjectHash(projects);
                     var ts_project_array = Rally.technicalservices.util.Utilities.structureProjects(ts_project_hash,true);
                     var ts_selected_project = Rally.technicalservices.util.Utilities.getProjectById(ts_project_array,selected_project_oid);
+                    var ts_selected_projects = Rally.technicalservices.util.Utilities.hashToOrderedArray(ts_selected_project.getData(true),"children");
+
+                    this._project_store = Ext.create('Rally.technicalservices.ProjectStore',{
+                        data: ts_selected_projects
+                    });
                     
-                    this.project_array = Rally.technicalservices.util.Utilities.hashToOrderedArray(ts_selected_project.getData(true),"children");
-                    this._processData();
+                    this._project_store.load(function() { me._processData(); } );
                 },
                 scope: this
             }
@@ -254,9 +333,9 @@ Ext.define('CustomApp', {
         });
     },
     _updateIterationDisplay: function(combobox) {
-        var timebox = combobox.getRecord();
-        var start_date = timebox.get(combobox.getStartDateField());
-        var end_date = timebox.get(combobox.getEndDateField());
+        this._selected_timebox = combobox.getRecord();
+        var start_date = this._selected_timebox.get(combobox.getStartDateField());
+        var end_date = this._selected_timebox.get(combobox.getEndDateField());
         var day_counter = -1;
         var today = new Date();
         if ( today >= start_date && today <= end_date ) {
@@ -270,13 +349,65 @@ Ext.define('CustomApp', {
             end_date:formatted_end_date,
             day_counter:day_counter
         });
-        this.logger.log(this,start_date,end_date);
+        
+        this._processData();
     },
     _processData:function() {
-        //
-        if ( this.project_array ) {
-            this._makeGrid(this.project_array);
+        var me = this;
+        if ( me._project_store && me._selected_timebox) {
+            me._return_counter = 0; // the calls for iterations are asynchronous, so we need to count returns
+            var projects = me._project_store.getRecords();
+            
+            me.logger.log(this,"Sending requests for " + projects.length + " projects");
+            Ext.Array.each(projects,function(project){
+                project.resetHealth();
+                me._calculateIterationData(me._selected_timebox.get('Name'),project);
+            });
+
+            this._makeGrid(this._project_store);
         }
+    },
+    /*
+     * Given the name of an iteration and a TSProject, go get the iteration stories and defects
+     * associated with an iteration with that name, then let the TSProject calculate various metrics
+     */
+    _calculateIterationData: function(iteration_name,project) {
+        this.logger.log(this,"_calculateIterationData",iteration_name,project);
+        var me = this;
+        
+        var artifacts = []; // have to get both stories and defects
+        var filters = [
+            {property:'Iteration.Name',value:iteration_name},
+            {property:'Project.ObjectID',value:project.get('ObjectID')}
+        ];
+        
+        var fetch = ['ObjectID','PlanEstimate','ScheduleState'];
+        
+        Ext.create('Rally.data.WsapiDataStore',{
+            model: 'UserStory',
+            autoLoad: true,
+            filters: filters,
+            fetch: fetch,
+            listeners: {
+                load: function(store,records){
+                    artifacts = records;
+                    Ext.create('Rally.data.WsapiDataStore',{
+                        model:'Defect',
+                        autoLoad: true,
+                        filters: filters,
+                        fetch: fetch,
+                        listeners: {
+                            load: function(store,records){
+                                artifacts = Ext.Array.push(artifacts,records);
+                                me.logger.log(this,project.get('Name'),artifacts.length);
+                                project.setIterationArtifacts(artifacts);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        
     },
     // given a set of Rally project objects, turn them into TS projects
     // the key of the hash is the project's ObjectID
@@ -303,16 +434,17 @@ Ext.define('CustomApp', {
     /*
      * Given an array of projects, make a grid
      */
-    _makeGrid: function(projects) {
-        var store = Ext.create('Rally.technicalservices.ProjectStore',{
-            data: projects
-        });
+    _makeGrid: function(store) {
+        
         if ( this.grid ) { this.grid.destroy(); }
         
         this.grid = Ext.create('Rally.ui.grid.Grid',{
             store: store,
             height: 400,
-            columnCfgs: [{text:'Project',dataIndex:'Name',flex: 1}]
+            columnCfgs: [
+                {text:'Project',dataIndex:'Name',flex: 1},
+                {text:'Estimation Ratio',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth}
+            ]
         });
         this.down('#grid_box').add(this.grid);
     }

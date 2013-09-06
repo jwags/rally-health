@@ -5,6 +5,17 @@
 Ext.define('Rally.technicalservices.ProjectStore',{
     extend: 'Rally.data.custom.Store',
     alias: 'store.projectree',
-    model: 'Rally.technicalservices.ProjectModel'
+    model: 'Rally.technicalservices.ProjectModel',
     
+    getRecords: function() {
+        var items = [];
+        this.each(function(storeItem) {
+            items.push(storeItem);
+        });
+        return items;
+    },
+    
+    getModelType: function() {
+        return this.model.getName();
+    }
 });

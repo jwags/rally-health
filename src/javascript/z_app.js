@@ -3,13 +3,15 @@ Ext.define('CustomApp', {
     componentCls: 'app',
     logger: new Rally.technicalservices.logger(),
     items: [ { xtype:'container',itemId:'selector_box', padding: 5, layout: { type:'hbox'} }, { xtype:'container', itemId:'grid_box', padding: 5 } ],
+    _selected_timebox: null,
+    _project_store: null,
     launch: function() {
         this._getProjects();
         this._addIterationSelector();
     },
     _getProjects: function() {
         var me = this;
-        this.project_array = null;
+        this._projects = [];
         var selected_project_oid = this.getContext().getProject().ObjectID;
         
         Ext.create('Rally.data.WsapiDataStore',{
@@ -20,9 +22,13 @@ Ext.define('CustomApp', {
                     var ts_project_hash = this._makeTSProjectHash(projects);
                     var ts_project_array = Rally.technicalservices.util.Utilities.structureProjects(ts_project_hash,true);
                     var ts_selected_project = Rally.technicalservices.util.Utilities.getProjectById(ts_project_array,selected_project_oid);
+                    var ts_selected_projects = Rally.technicalservices.util.Utilities.hashToOrderedArray(ts_selected_project.getData(true),"children");
+
+                    this._project_store = Ext.create('Rally.technicalservices.ProjectStore',{
+                        data: ts_selected_projects
+                    });
                     
-                    this.project_array = Rally.technicalservices.util.Utilities.hashToOrderedArray(ts_selected_project.getData(true),"children");
-                    this._processData();
+                    this._project_store.load(function() { me._processData(); } );
                 },
                 scope: this
             }
@@ -56,9 +62,9 @@ Ext.define('CustomApp', {
         });
     },
     _updateIterationDisplay: function(combobox) {
-        var timebox = combobox.getRecord();
-        var start_date = timebox.get(combobox.getStartDateField());
-        var end_date = timebox.get(combobox.getEndDateField());
+        this._selected_timebox = combobox.getRecord();
+        var start_date = this._selected_timebox.get(combobox.getStartDateField());
+        var end_date = this._selected_timebox.get(combobox.getEndDateField());
         var day_counter = -1;
         var today = new Date();
         if ( today >= start_date && today <= end_date ) {
@@ -72,13 +78,65 @@ Ext.define('CustomApp', {
             end_date:formatted_end_date,
             day_counter:day_counter
         });
-        this.logger.log(this,start_date,end_date);
+        
+        this._processData();
     },
     _processData:function() {
-        //
-        if ( this.project_array ) {
-            this._makeGrid(this.project_array);
+        var me = this;
+        if ( me._project_store && me._selected_timebox) {
+            me._return_counter = 0; // the calls for iterations are asynchronous, so we need to count returns
+            var projects = me._project_store.getRecords();
+            
+            me.logger.log(this,"Sending requests for " + projects.length + " projects");
+            Ext.Array.each(projects,function(project){
+                project.resetHealth();
+                me._calculateIterationData(me._selected_timebox.get('Name'),project);
+            });
+
+            this._makeGrid(this._project_store);
         }
+    },
+    /*
+     * Given the name of an iteration and a TSProject, go get the iteration stories and defects
+     * associated with an iteration with that name, then let the TSProject calculate various metrics
+     */
+    _calculateIterationData: function(iteration_name,project) {
+        this.logger.log(this,"_calculateIterationData",iteration_name,project);
+        var me = this;
+        
+        var artifacts = []; // have to get both stories and defects
+        var filters = [
+            {property:'Iteration.Name',value:iteration_name},
+            {property:'Project.ObjectID',value:project.get('ObjectID')}
+        ];
+        
+        var fetch = ['ObjectID','PlanEstimate','ScheduleState'];
+        
+        Ext.create('Rally.data.WsapiDataStore',{
+            model: 'UserStory',
+            autoLoad: true,
+            filters: filters,
+            fetch: fetch,
+            listeners: {
+                load: function(store,records){
+                    artifacts = records;
+                    Ext.create('Rally.data.WsapiDataStore',{
+                        model:'Defect',
+                        autoLoad: true,
+                        filters: filters,
+                        fetch: fetch,
+                        listeners: {
+                            load: function(store,records){
+                                artifacts = Ext.Array.push(artifacts,records);
+                                me.logger.log(this,project.get('Name'),artifacts.length);
+                                project.setIterationArtifacts(artifacts);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        
     },
     // given a set of Rally project objects, turn them into TS projects
     // the key of the hash is the project's ObjectID
@@ -105,16 +163,17 @@ Ext.define('CustomApp', {
     /*
      * Given an array of projects, make a grid
      */
-    _makeGrid: function(projects) {
-        var store = Ext.create('Rally.technicalservices.ProjectStore',{
-            data: projects
-        });
+    _makeGrid: function(store) {
+        
         if ( this.grid ) { this.grid.destroy(); }
         
         this.grid = Ext.create('Rally.ui.grid.Grid',{
             store: store,
             height: 400,
-            columnCfgs: [{text:'Project',dataIndex:'Name',flex: 1}]
+            columnCfgs: [
+                {text:'Project',dataIndex:'Name',flex: 1},
+                {text:'Estimation Ratio',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth}
+            ]
         });
         this.down('#grid_box').add(this.grid);
     }
