@@ -1,7 +1,8 @@
 describe("Fast Project Model tests for ICFD health",function(){
     var today;
-    var today_minus_1
-    var today_minus_2
+    var today_minus_1;
+    var today_minus_2;
+    var today_minus_3;
     
     beforeEach(function () {
         today = new Date();
@@ -37,6 +38,8 @@ describe("Fast Project Model tests for ICFD health",function(){
             expect(parent.get('health_ratio_in-progress')).toEqual(-1);
             expect(child.get('health_half_accepted_ratio')).toEqual(2);
             expect(parent.get('health_half_accepted_ratio')).toEqual(-1);
+            expect(child.get('health_end_incompletion_ratio')).toEqual(2);
+            expect(parent.get('health_end_incompletion_ratio')).toEqual(-1);
         });
     });
     
@@ -259,5 +262,37 @@ describe("Fast Project Model tests for ICFD health",function(){
             ]);
             expect(project.get('health_half_accepted_ratio')).toEqual(0.33);
         });
-    });    
+    });
+    
+    describe("When adding ICFD data to projects to calculate end (in)completion ratio",function(){
+        it('should determine ratio of items not completed at end',function() {
+            var project = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Child',
+                ObjectID: 1235
+            });
+            
+            // Day 1
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
+            var completed_day_1 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: today_minus_2 });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            // Day 2
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: today_minus_1 });
+            var completed_day_2 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: today_minus_1 });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: today_minus_1 });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_1 });
+            // Day 3 
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 10, CreationDate: today });
+            var completed_day_3 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 10, CreationDate: today });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 10, CreationDate: today });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            
+            project.setIterationCumulativeFlowData([
+                accepted_day_1,completed_day_1,in_p_day_1,defined_day_1,
+                accepted_day_2,completed_day_2,in_p_day_2,defined_day_2,
+                accepted_day_3,completed_day_3,in_p_day_3,defined_day_3
+            ]);
+            expect(project.get('health_end_incompletion_ratio')).toEqual(0.33);
+        });
+    });
 });

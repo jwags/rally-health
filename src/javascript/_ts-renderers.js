@@ -52,6 +52,26 @@ Ext.define('TSRenderers', {
             text = "Never accomplished";
         }
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
+    },
+    incompletionHealth: function(value) {
+        if ( value < 0 ) {
+            return " ";
+        }
+        var percent = parseInt( 100 * value, 10 );
+        var text = percent + "%";
+        
+        var color = TSRenderers.green;
+        if ( percent > 9 ) {
+            color = TSRenderers.yellow;
+        }
+        if ( percent > 20 ) {
+            color = TSRenderers.red;
+        }
+        if ( percent === 200 ) {
+            color = "white";
+            text = "No Data";
+        }
+        return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     }
     
 });
