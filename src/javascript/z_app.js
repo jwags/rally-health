@@ -223,7 +223,8 @@ Ext.define('CustomApp', {
                 {text:'Estimation Ratio',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},
                 {text:'Average Daily In-Progress',dataIndex:'health_ratio_in-progress',renderer: TSRenderers.inProgressHealth},
                 {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth},
-                {text:'Incompletion Ratio Final Day',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth}
+                {text:'Last Day Incompletion Ratio',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth},
+                {text:'Last Day Acceptance Ratio',dataIndex:'health_end_acceptance_ratio',renderer:TSRenderers.acceptanceHealth}
             ]
         });
         this.down('#grid_box').add(this.grid);

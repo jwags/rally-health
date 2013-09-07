@@ -26,7 +26,8 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
         {name:'health_ratio_in-progress',type:'float',defaultValue:0},
         {name:'health_half_accepted_ratio',type:'float',defaultValue:2},
-        {name:'health_end_incompletion_ratio',type:'float',defaultValue:2}
+        {name:'health_end_incompletion_ratio',type:'float',defaultValue:2},
+        {name:'health_end_acceptance_ratio',type:'float',defaultValue:2}
     ],
     hasMany:[{model:'Rally.technicalservices.ProjectModel', name:'children'}],
     associations: [
@@ -37,6 +38,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         this.set('health_ratio_in-progress',-1);
         this.set('health_half_accepted_ratio',-1);
         this.set('health_end_incompletion_ratio',-1);
+        this.set('health_end_acceptance_ratio',-1);
 
         if ( child.get('parent_id') !== this.get('ObjectID') ) {
             child.setParent(this.get('ObjectID'));
@@ -87,6 +89,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             });
             
             this._setAverageInProgress();
+            this._setHalfAcceptanceRatio();
             this._setAcceptanceRatio();
             this._setIncompletionRatio();
         }
@@ -123,7 +126,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
      * The inner hash key is date (in JS date format)
      * The inner value is the sum of estimates for that day
      */
-    _setAcceptanceRatio:function(){
+    _setHalfAcceptanceRatio:function(){
         var all_hash = this.getDailyTotalByState();
         var accepted_hash = this.getDailyTotalByState("Accepted");
 
@@ -185,6 +188,36 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             this.set('health_end_incompletion_ratio',ratio);
         }
     },
+    /**
+     * Given a hash of hashes structured as:
+     * 
+     * The outer hash key is state (plus "All")
+     * The inner hash key is date (in JS date format)
+     * The inner value is the sum of estimates for that day
+     */
+    _setAcceptanceRatio:function(){
+        var all_hash = this.getDailyTotalByState();
+        var accepted_hash = this.getDailyTotalByState("Accepted");
+        
+        if (!all_hash) { 
+            this.set('health_end_acceptance_ratio',0); 
+        } else {
+            var card_dates = Ext.Object.getKeys(all_hash);
+            var last_date = card_dates.pop();
+            
+            var last_total = all_hash[last_date];
+            var last_accepted = 0;
+            var last_completed = 0;
+            if ( accepted_hash ) {
+                last_accepted = accepted_hash[last_date] || 0;
+            }
+            
+            var ratio = last_accepted/last_total;
+            ratio = Ext.util.Format.number(ratio,"0.00");
+            
+            this.set('health_end_acceptance_ratio',ratio);
+        }
+    },
     /*
      * Given a state, what are the total values in that state for each date?
      * 
@@ -225,11 +258,13 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             this.set('health_ratio_in-progress',-1);
             this.set('health_half_accepted_ratio',-1);
             this.set('health_end_incompletion_ratio',-1);
+            this.set('health_end_acceptance_ratio',-1);
         } else {
             this.set('health_ratio_estimated',0);
             this.set('health_ratio_in-progress',0);
             this.set('health_half_accepted_ratio',2);
             this.set('health_end_incompletion_ratio',2);
+            this.set('health_end_acceptance_ratio',2);
         }
     }
 });

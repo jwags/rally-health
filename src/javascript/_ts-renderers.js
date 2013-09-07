@@ -72,6 +72,23 @@ Ext.define('TSRenderers', {
             text = "No Data";
         }
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
+    },
+    acceptanceHealth: function(value) {
+        if ( value < 0 ) {
+            return " ";
+        }
+        var percent = parseInt( 100 * value, 10 );
+        var text = percent + "%";
+        
+        var color = TSRenderers.green;
+        if ( percent < 91 ) {
+            color = TSRenderers.yellow;
+        }
+        if ( percent < 50 ) {
+            color = TSRenderers.red;
+        }
+        
+        return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     }
     
 });
