@@ -90,18 +90,66 @@ Ext.define('CustomApp', {
             me.logger.log(this,"Sending requests for " + projects.length + " projects");
             Ext.Array.each(projects,function(project){
                 project.resetHealth();
-                me._calculateIterationData(me._selected_timebox.get('Name'),project);
+                me._setArtifactHealth(me._selected_timebox.get('Name'),project);
+                me._setCumulativeHealth(me._selected_timebox.get('Name'),project);
             });
 
             this._makeGrid(this._project_store);
         }
     },
     /*
+     * (health related to data we can get from the cumulative flow records)
+     * 
+     * Given the name of an iteration and a TSProject, go get the iteration cumulative flow records
+     * 
+     */
+    _setCumulativeHealth:function(iteration_name,project){
+        var me = this;
+        // sadly, all iteration records are separate.  we have to get the one for this project and then get the
+        // cumulative flow data
+        Ext.create('Rally.data.WsapiDataStore',{
+            model:'Iteration',
+            fetch: 'ObjectID',
+            autoLoad: true,
+            filters: [
+                {property:'Name',value:iteration_name},
+                {property:'Project.ObjectID',value:project.get('ObjectID')}
+            ],
+            listeners: {
+                load: function(store,records) {
+                    me.logger.log(this,project.get('Name'),"iteration",records);
+                    if ( records.length === 0 ) {
+                        project.resetHealth();
+                        me.logger.log(this, project.get('Name') , "No iteration found for project ");
+                    }else{
+                        var iteration_oid = records[0].get('ObjectID');
+                        Ext.create('Rally.data.WsapiDataStore',{
+                            model:'IterationCumulativeFlowData',
+                            autoLoad: true,
+                            filters: [{property:'IterationObjectID',value:iteration_oid}],
+                            listeners: {
+                                load: function(store,records){
+                                    if ( records.length === 0 ) {
+                                        me.logger.log(this, project.get('Name'), "No cumulative flow data found for project ");
+                                    } else {
+                                        me.logger.log(this,project.get('Name'),'CFD',records);
+                                        project.setIterationCumulativeFlowData(records);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        })
+    },
+    /*
+     * (health related to data we can get from the artifacts themselves)
      * Given the name of an iteration and a TSProject, go get the iteration stories and defects
      * associated with an iteration with that name, then let the TSProject calculate various metrics
      */
-    _calculateIterationData: function(iteration_name,project) {
-        this.logger.log(this,"_calculateIterationData",iteration_name,project);
+    _setArtifactHealth: function(iteration_name,project) {
+        this.logger.log(this,"_setArtifactHealth",iteration_name,project);
         var me = this;
         
         var artifacts = []; // have to get both stories and defects
@@ -172,7 +220,8 @@ Ext.define('CustomApp', {
             height: 400,
             columnCfgs: [
                 {text:'Project',dataIndex:'Name',flex: 1},
-                {text:'Estimation Ratio',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth}
+                {text:'Estimation Ratio',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},
+                {text:'Average Daily In-Progress',dataIndex:'health_ratio_in-progress',renderer: TSRenderers.inProgressHealth}
             ]
         });
         this.down('#grid_box').add(this.grid);

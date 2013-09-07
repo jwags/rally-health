@@ -19,6 +19,20 @@ Ext.define('TSRenderers', {
             color = TSRenderers.red;
         }
         return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
+    },
+    inProgressHealth: function(value) {
+        if ( value < 0 ) {
+            return " ";
+        }
+        var percent = parseInt( 100 * value, 10 );
+        var color = TSRenderers.green;
+        if ( percent > 25 ) {
+            color = TSRenderers.yellow;
+        }
+        if ( percent > 35 ) {
+            color = TSRenderers.red;
+        }
+        return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
     }
     
 });

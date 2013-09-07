@@ -22,7 +22,8 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'text',type:'string',convert:useName},
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
-        {name:'health_ratio_estimated',type:'float',defaultValue:0}
+        {name:'health_ratio_estimated',type:'float',defaultValue:0},
+        {name:'health_ratio_in-progress',type:'float',defaultValue:0}
     ],
     hasMany:[{model:'Rally.technicalservices.ProjectModel', name:'children'}],
     associations: [
@@ -30,7 +31,10 @@ Ext.define('Rally.technicalservices.ProjectModel',{
     ],
     addChild: function(child) {
         this.set('health_ratio_estimated',-1);
-        
+        this.set('health_ratio_in-progress',-1);
+
+                    
+                    
         if ( child.get('parent_id') !== this.get('ObjectID') ) {
             child.setParent(this.get('ObjectID'));
         }
@@ -53,6 +57,68 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             children.push(kid.getData(true));
         });
         return { 'children': children };
+    },
+    /**
+     * Given an array of iteration cumulative flow objects, calculate a few health metrics
+     */
+    setIterationCumulativeFlowData: function(icfd){
+        var me = this;
+        this.daily_totals = {};
+        if ( this.get('child_count')  > 0 ) {
+            this.set('health_ratio_in-progress',-1);
+        } else {
+                    
+            Ext.Array.each(icfd, function(cf) {
+                var card_date = cf.get('CreationDate');
+                var card_estimate = cf.get('CardEstimateTotal');
+                var card_state = cf.get('CardState');
+                
+                if ( !me.daily_totals.All ) { me.daily_totals.All = {}; }
+                if ( !me.daily_totals[card_state]){ me.daily_totals[card_state] = {} }
+                
+                if ( !me.daily_totals.All[card_date] ) { me.daily_totals.All[card_date] = 0; }
+                if ( !me.daily_totals[card_state][card_date] ) { me.daily_totals[card_state][card_date] = 0; }
+    
+                me.daily_totals.All[card_date] += card_estimate;
+                me.daily_totals[card_state][card_date] += card_estimate;
+            });
+            
+            this._setAverageInProgress();
+        }
+    },
+    /**
+     * Given a hash of hashes structured as:
+     * 
+     * The outer hash key is state (plus "All")
+     * The inner hash key is date (in JS date format)
+     * The inner value is the sum of estimates for that day
+     */
+    _setAverageInProgress:function(){
+        var all_hash = this.getDailyTotalByState();
+        var ip_hash = this.getDailyTotalByState("In-Progress");
+
+        if (!all_hash || !ip_hash) { 
+            this.set('health_ratio_in-progress',0); 
+        } else {
+            var totals = [];
+
+            for ( var card_date in all_hash ) {
+                var day_total = all_hash[card_date];
+                var day_ip = ip_hash[card_date] || 0;
+                
+                totals.push( day_ip/day_total );
+            }
+            this.set('health_ratio_in-progress',Ext.util.Format.number(Ext.Array.mean(totals),"0.00"));
+        }
+    },
+    /*
+     * Given a state, what are the total values in that state for each date?
+     * 
+     * return full total when no state provided
+     */
+    getDailyTotalByState: function(state) {
+        if ( !state ) { state = "All"; }
+        return this.daily_totals[state];
     },
     /**
      * Given an array of artifacts (stories and defects), calculate some health metrics
@@ -80,10 +146,12 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         }
     },
     resetHealth: function() {
-        if ( this.get('children') && this.get('children').length > 0 ) {
+        if ( this.get('child_count')  > 0 ) {
             this.set('health_ratio_estimated',-1);
+            this.set('health_ratio_in-progress',-1);
         } else {
             this.set('health_ratio_estimated',0);
+            this.set('health_ratio_in-progress',0);
         }
     }
 });
