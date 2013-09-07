@@ -218,6 +218,7 @@ Ext.define('CustomApp', {
         this.grid = Ext.create('Rally.ui.grid.Grid',{
             store: store,
             height: 400,
+            sortableColumns: false,
             columnCfgs: [
                 {text:'Project',dataIndex:'Name',flex: 1},
                 {text:'Estimation Ratio',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},

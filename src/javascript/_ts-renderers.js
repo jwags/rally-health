@@ -87,7 +87,10 @@ Ext.define('TSRenderers', {
         if ( percent < 50 ) {
             color = TSRenderers.red;
         }
-        
+        if ( percent === 200 ) {
+            color = "white";
+            text = "No Data";
+        }
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     }
     
