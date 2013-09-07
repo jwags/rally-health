@@ -20,10 +20,12 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'parent_id',type:'int'},
         {name:'id',type:'int',convert:useObjectID},
         {name:'text',type:'string',convert:useName},
+        {name:'iteration_day_count',type:'int',defaultValue:10},
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
-        {name:'health_ratio_in-progress',type:'float',defaultValue:0}
+        {name:'health_ratio_in-progress',type:'float',defaultValue:0},
+        {name:'health_half_accepted_ratio',type:'float',defaultValue:0}
     ],
     hasMany:[{model:'Rally.technicalservices.ProjectModel', name:'children'}],
     associations: [
@@ -32,9 +34,8 @@ Ext.define('Rally.technicalservices.ProjectModel',{
     addChild: function(child) {
         this.set('health_ratio_estimated',-1);
         this.set('health_ratio_in-progress',-1);
+        this.set('health_half_accepted_ratio',-1);
 
-                    
-                    
         if ( child.get('parent_id') !== this.get('ObjectID') ) {
             child.setParent(this.get('ObjectID'));
         }
@@ -84,6 +85,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             });
             
             this._setAverageInProgress();
+            this._setAcceptanceRatio();
         }
     },
     /**
@@ -109,6 +111,42 @@ Ext.define('Rally.technicalservices.ProjectModel',{
                 totals.push( day_ip/day_total );
             }
             this.set('health_ratio_in-progress',Ext.util.Format.number(Ext.Array.mean(totals),"0.00"));
+        }
+    },
+    /**
+     * Given a hash of hashes structured as:
+     * 
+     * The outer hash key is state (plus "All")
+     * The inner hash key is date (in JS date format)
+     * The inner value is the sum of estimates for that day
+     */
+    _setAcceptanceRatio:function(){
+        var all_hash = this.getDailyTotalByState();
+        var accepted_hash = this.getDailyTotalByState("Accepted");
+
+        if (!all_hash || !accepted_hash) { 
+            this.set('health_half_accepted_ratio',0); 
+        } else {
+            var day_index = -1;
+            var day_counter = 0;
+            for ( var card_date in all_hash ) {
+                day_counter++;
+                
+                var day_total = all_hash[card_date];
+                var day_accepted = accepted_hash[card_date] || 0;
+                
+                if ( day_accepted/day_total >= 0.5 && day_index === -1 ) {
+                    day_index = day_counter;
+                } else if ( day_accepted/day_total < 0.5 && day_index > -1 ) {
+                    // if we slipped back to under 50%
+                    day_index = -1;
+                }
+            }
+            var ratio = 2;
+            if ( day_index > -1 ) {
+                ratio = Ext.util.Format.number(day_index/day_counter,"0.00");
+            }
+            this.set('health_half_accepted_ratio',ratio);
         }
     },
     /*
@@ -149,9 +187,11 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         if ( this.get('child_count')  > 0 ) {
             this.set('health_ratio_estimated',-1);
             this.set('health_ratio_in-progress',-1);
+            this.set('health_half_accepted_ratio',-1);
         } else {
             this.set('health_ratio_estimated',0);
             this.set('health_ratio_in-progress',0);
+            this.set('health_half_accepted_ratio',0);
         }
     }
 });

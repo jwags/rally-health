@@ -33,6 +33,20 @@ Ext.define('TSRenderers', {
             color = TSRenderers.red;
         }
         return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
+    },
+    halfAcceptedHealth: function(value) {
+        if ( value < 0 ) {
+            return " ";
+        }
+        var percent = parseInt( 100 * value, 10 );
+        var color = TSRenderers.green;
+        if ( percent > 50 ) {
+            color = TSRenderers.yellow;
+        }
+        if ( percent > 75 ) {
+            color = TSRenderers.red;
+        }
+        return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
     }
     
 });
