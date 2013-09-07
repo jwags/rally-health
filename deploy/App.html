@@ -3,7 +3,7 @@
 <head>
     <title>Health Check</title>
     <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Fri Sep 06 2013 18:59:29 GMT-0700 (PDT) -->
+    <!--  Build Date: Fri Sep 06 2013 19:10:09 GMT-0700 (PDT) -->
     <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
@@ -82,6 +82,8 @@ Ext.define('TSRenderers', {
             return " ";
         }
         var percent = parseInt( 100 * value, 10 );
+        var text = percent + "%";
+        
         var color = TSRenderers.green;
         if ( percent > 50 ) {
             color = TSRenderers.yellow;
@@ -89,7 +91,10 @@ Ext.define('TSRenderers', {
         if ( percent > 75 ) {
             color = TSRenderers.red;
         }
-        return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
+        if ( percent === 200 ) {
+            text = "Never accomplished";
+        }
+        return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     }
     
 });
@@ -214,7 +219,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
         {name:'health_ratio_in-progress',type:'float',defaultValue:0},
-        {name:'health_half_accepted_ratio',type:'float',defaultValue:0}
+        {name:'health_half_accepted_ratio',type:'float',defaultValue:2}
     ],
     hasMany:[{model:'Rally.technicalservices.ProjectModel', name:'children'}],
     associations: [
@@ -380,7 +385,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         } else {
             this.set('health_ratio_estimated',0);
             this.set('health_ratio_in-progress',0);
-            this.set('health_half_accepted_ratio',0);
+            this.set('health_half_accepted_ratio',2);
         }
     }
 });

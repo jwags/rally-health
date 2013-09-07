@@ -39,6 +39,8 @@ Ext.define('TSRenderers', {
             return " ";
         }
         var percent = parseInt( 100 * value, 10 );
+        var text = percent + "%";
+        
         var color = TSRenderers.green;
         if ( percent > 50 ) {
             color = TSRenderers.yellow;
@@ -46,7 +48,10 @@ Ext.define('TSRenderers', {
         if ( percent > 75 ) {
             color = TSRenderers.red;
         }
-        return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
+        if ( percent === 200 ) {
+            text = "Never accomplished";
+        }
+        return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     }
     
 });

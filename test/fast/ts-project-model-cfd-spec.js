@@ -35,7 +35,7 @@ describe("Fast Project Model tests for ICFD health",function(){
             child.resetHealth();
             expect(child.get('health_ratio_in-progress')).toEqual(0);
             expect(parent.get('health_ratio_in-progress')).toEqual(-1);
-            expect(child.get('health_half_accepted_ratio')).toEqual(0);
+            expect(child.get('health_half_accepted_ratio')).toEqual(2);
             expect(parent.get('health_half_accepted_ratio')).toEqual(-1);
         });
     });

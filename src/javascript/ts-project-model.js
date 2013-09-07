@@ -25,7 +25,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
         {name:'health_ratio_in-progress',type:'float',defaultValue:0},
-        {name:'health_half_accepted_ratio',type:'float',defaultValue:0}
+        {name:'health_half_accepted_ratio',type:'float',defaultValue:2}
     ],
     hasMany:[{model:'Rally.technicalservices.ProjectModel', name:'children'}],
     associations: [
@@ -191,7 +191,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         } else {
             this.set('health_ratio_estimated',0);
             this.set('health_ratio_in-progress',0);
-            this.set('health_half_accepted_ratio',0);
+            this.set('health_half_accepted_ratio',2);
         }
     }
 });
