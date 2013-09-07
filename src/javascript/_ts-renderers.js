@@ -6,7 +6,8 @@ Ext.define('TSRenderers', {
     defaultF: function(value,metaData,record,rowIndex,colIndex,store,view){
         return value;
     },
-    estimateHealth: function(value) {
+    estimateHealth: function(value,metaData) {
+        
         if ( value < 0 ) {
             return " ";
         }
@@ -18,9 +19,10 @@ Ext.define('TSRenderers', {
         if ( percent < 61 ) {
             color = TSRenderers.red;
         }
+        metaData.style = "background-color: " + color;
         return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
     },
-    inProgressHealth: function(value) {
+    inProgressHealth: function(value,metaData) {
         if ( value < 0 ) {
             return " ";
         }
@@ -32,9 +34,10 @@ Ext.define('TSRenderers', {
         if ( percent > 35 ) {
             color = TSRenderers.red;
         }
+        metaData.style = "background-color: " + color;
         return "<div style='text-align:center;background-color:" + color + "'>"+ percent + "%</div>";
     },
-    halfAcceptedHealth: function(value) {
+    halfAcceptedHealth: function(value,metaData) {
         if ( value < 0 ) {
             return " ";
         }
@@ -49,11 +52,12 @@ Ext.define('TSRenderers', {
             color = TSRenderers.red;
         }
         if ( percent === 200 ) {
-            text = "Never accomplished";
+            text = "Never";
         }
+        metaData.style = "background-color: " + color;
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     },
-    incompletionHealth: function(value) {
+    incompletionHealth: function(value,metaData) {
         if ( value < 0 ) {
             return " ";
         }
@@ -71,9 +75,10 @@ Ext.define('TSRenderers', {
             color = "white";
             text = "No Data";
         }
+        metaData.style = "background-color: " + color;
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     },
-    acceptanceHealth: function(value) {
+    acceptanceHealth: function(value,metaData) {
         if ( value < 0 ) {
             return " ";
         }
@@ -91,6 +96,7 @@ Ext.define('TSRenderers', {
             color = "white";
             text = "No Data";
         }
+        metaData.style = "background-color: " + color;
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     }
     
