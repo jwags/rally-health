@@ -54,7 +54,7 @@ Ext.define('CustomApp', {
             xtype:'container',
             itemId: 'iteration_range_box',
             tpl: [
-                "{start_date} - {end_date}",
+                "{start_date} - {end_date} ({number_of_days} days)",
                 '<tpl if="day_counter &gt; -1">',
                 "<br/>This is day {day_counter} of the iteration",
                 '</tpl>'
@@ -69,15 +69,19 @@ Ext.define('CustomApp', {
         var today = new Date();
         if ( today >= start_date && today <= end_date ) {
             day_counter = Rally.technicalservices.util.Utilities.daysBetween(today,start_date,"true") + 1;
-            
         }
+        var number_of_days_in_sprint = Rally.technicalservices.util.Utilities.daysBetween(end_date,start_date,"true") + 1;
+        
+        this._selected_timebox.set('number_of_days_in_sprint',number_of_days_in_sprint);
+        
         var formatted_start_date = Rally.util.DateTime.formatWithNoYearWithDefault(start_date);
         var formatted_end_date = Rally.util.DateTime.formatWithNoYearWithDefault(end_date);
         
         this.down('#iteration_range_box').update({
             start_date:formatted_start_date,
             end_date:formatted_end_date,
-            day_counter:day_counter
+            day_counter:day_counter,
+            number_of_days: number_of_days_in_sprint
         });
         
         this._processData();
@@ -91,6 +95,7 @@ Ext.define('CustomApp', {
             me.logger.log(this,"Sending requests for " + projects.length + " projects");
             Ext.Array.each(projects,function(project){
                 project.resetHealth();
+                project.set('number_of_days_in_sprint',me._selected_timebox.get('number_of_days_in_sprint'));
                 me._setArtifactHealth(me._selected_timebox.get('Name'),project);
                 me._setCumulativeHealth(me._selected_timebox.get('Name'),project);
             });

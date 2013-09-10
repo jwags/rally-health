@@ -3,7 +3,7 @@
 <head>
     <title>Health Check</title>
     <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Mon Sep 09 2013 19:20:18 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Sep 09 2013 19:54:10 GMT-0700 (PDT) -->
     <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
@@ -302,7 +302,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'parent_id',type:'int'},
         {name:'id',type:'int',convert:useObjectID},
         {name:'text',type:'string',convert:useName},
-        {name:'iteration_day_count',type:'int',defaultValue:10},
+        {name:'number_of_days_in_sprint',type:'int',defaultValue:-1},
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
@@ -432,6 +432,9 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             }
             var ratio = 2;
             if ( day_index > -1 ) {
+                if ( this.get('number_of_days_in_sprint') > -1 ) {
+                    day_counter = this.get('number_of_days_in_sprint');
+                }
                 ratio = Ext.util.Format.number(day_index/day_counter,"0.00");
             }
             this.set('health_half_accepted_ratio',ratio);
@@ -627,7 +630,7 @@ Ext.define('CustomApp', {
             xtype:'container',
             itemId: 'iteration_range_box',
             tpl: [
-                "{start_date} - {end_date}",
+                "{start_date} - {end_date} ({number_of_days} days)",
                 '<tpl if="day_counter &gt; -1">',
                 "<br/>This is day {day_counter} of the iteration",
                 '</tpl>'
@@ -642,15 +645,19 @@ Ext.define('CustomApp', {
         var today = new Date();
         if ( today >= start_date && today <= end_date ) {
             day_counter = Rally.technicalservices.util.Utilities.daysBetween(today,start_date,"true") + 1;
-            
         }
+        var number_of_days_in_sprint = Rally.technicalservices.util.Utilities.daysBetween(end_date,start_date,"true") + 1;
+        
+        this._selected_timebox.set('number_of_days_in_sprint',number_of_days_in_sprint);
+        
         var formatted_start_date = Rally.util.DateTime.formatWithNoYearWithDefault(start_date);
         var formatted_end_date = Rally.util.DateTime.formatWithNoYearWithDefault(end_date);
         
         this.down('#iteration_range_box').update({
             start_date:formatted_start_date,
             end_date:formatted_end_date,
-            day_counter:day_counter
+            day_counter:day_counter,
+            number_of_days: number_of_days_in_sprint
         });
         
         this._processData();
@@ -664,6 +671,7 @@ Ext.define('CustomApp', {
             me.logger.log(this,"Sending requests for " + projects.length + " projects");
             Ext.Array.each(projects,function(project){
                 project.resetHealth();
+                project.set('number_of_days_in_sprint',me._selected_timebox.get('number_of_days_in_sprint'));
                 me._setArtifactHealth(me._selected_timebox.get('Name'),project);
                 me._setCumulativeHealth(me._selected_timebox.get('Name'),project);
             });

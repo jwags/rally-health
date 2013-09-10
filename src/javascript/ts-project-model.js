@@ -20,7 +20,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'parent_id',type:'int'},
         {name:'id',type:'int',convert:useObjectID},
         {name:'text',type:'string',convert:useName},
-        {name:'iteration_day_count',type:'int',defaultValue:10},
+        {name:'number_of_days_in_sprint',type:'int',defaultValue:-1},
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
@@ -150,6 +150,9 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             }
             var ratio = 2;
             if ( day_index > -1 ) {
+                if ( this.get('number_of_days_in_sprint') > -1 ) {
+                    day_counter = this.get('number_of_days_in_sprint');
+                }
                 ratio = Ext.util.Format.number(day_index/day_counter,"0.00");
             }
             this.set('health_half_accepted_ratio',ratio);

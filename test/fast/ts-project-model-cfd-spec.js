@@ -139,7 +139,7 @@ describe("Fast Project Model tests for ICFD health",function(){
         });
     });
     
-    describe("When adding ICFD data to projects to calculate acceptance completion",function(){
+    describe("When adding ICFD data to projects to calculate acceptance rate",function(){
         it('should determine day count for half accepted',function() {
             var project = Ext.create('Rally.technicalservices.ProjectModel',{
                 Name: 'Child',
@@ -158,9 +158,7 @@ describe("Fast Project Model tests for ICFD health",function(){
             var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: today });
             var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
             var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
-            
-            project.set('iteration_day_count',3);
-            
+
             project.setIterationCumulativeFlowData([
                 accepted_day_1,in_p_day_1,defined_day_1,
                 accepted_day_2,in_p_day_2,defined_day_2,
@@ -168,6 +166,36 @@ describe("Fast Project Model tests for ICFD health",function(){
             ]);
             expect(project.get('health_half_accepted_ratio')).toEqual(0.67);
         });
+        
+        it('should determine day count for half accepted when given total days in sprint',function() {
+            var project = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Child',
+                ObjectID: 1235
+            });
+            
+            project.set('number_of_days_in_sprint',6);
+            
+            // Day 1, 0 accepted
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            // Day 2, 50% accepted
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: today_minus_1 });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_1 });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: today_minus_1 });
+            // Day 3, a lot accepted
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: today });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+
+            project.setIterationCumulativeFlowData([
+                accepted_day_1,in_p_day_1,defined_day_1,
+                accepted_day_2,in_p_day_2,defined_day_2,
+                accepted_day_3,in_p_day_3,defined_day_3
+            ]);
+            expect(project.get('health_half_accepted_ratio')).toEqual(0.33);
+        });
+        
         
         it('should determine day count for half accepted then unaccepted',function() {
             var project = Ext.create('Rally.technicalservices.ProjectModel',{
@@ -192,7 +220,6 @@ describe("Fast Project Model tests for ICFD health",function(){
             var in_p_day_4 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today });
             var defined_day_4 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
             
-            project.set('iteration_day_count',4);
             project.setIterationCumulativeFlowData([
                 accepted_day_1,in_p_day_1,defined_day_1,
                 accepted_day_2,in_p_day_2,defined_day_2,
@@ -202,7 +229,6 @@ describe("Fast Project Model tests for ICFD health",function(){
             expect(project.get('health_half_accepted_ratio')).toEqual(1);
         });
 
-                
         it('should return 2 if not 50% accepted',function() {
             var project = Ext.create('Rally.technicalservices.ProjectModel',{
                 Name: 'Child',
@@ -226,7 +252,6 @@ describe("Fast Project Model tests for ICFD health",function(){
             var in_p_day_4 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
             var defined_day_4 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
             
-            project.set('iteration_day_count',4);
             
             project.setIterationCumulativeFlowData([
                 accepted_day_1,in_p_day_1,defined_day_1,
