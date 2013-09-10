@@ -68,7 +68,8 @@ Ext.define('CustomApp', {
         var day_counter = -1;
         var today = new Date();
         if ( today >= start_date && today <= end_date ) {
-            day_counter = Rally.util.DateTime.getDifference(today,start_date,"day");
+            day_counter = Rally.technicalservices.util.Utilities.daysBetween(today,start_date,"true") + 1;
+            
         }
         var formatted_start_date = Rally.util.DateTime.formatWithNoYearWithDefault(start_date);
         var formatted_end_date = Rally.util.DateTime.formatWithNoYearWithDefault(end_date);
