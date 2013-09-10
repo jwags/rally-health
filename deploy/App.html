@@ -3,7 +3,7 @@
 <head>
     <title>Health Check</title>
     <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Sat Sep 07 2013 13:49:42 GMT-0700 (PDT) -->
+    <!--  Build Date: Mon Sep 09 2013 17:42:42 GMT-0700 (PDT) -->
     <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
@@ -752,7 +752,7 @@ Ext.define('CustomApp', {
             sortableColumns: false,
             columnCfgs: [
                 {text:'Project',dataIndex:'Name',flex: 1},
-                {text:'Estimation Ratio',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},
+                {text:'Estimation Ratio (Current)',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},
                 {text:'Average Daily In-Progress',dataIndex:'health_ratio_in-progress',renderer: TSRenderers.inProgressHealth},
                 {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth},
                 {text:'Last Day Incompletion Ratio',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth},

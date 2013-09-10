@@ -221,7 +221,7 @@ Ext.define('CustomApp', {
             sortableColumns: false,
             columnCfgs: [
                 {text:'Project',dataIndex:'Name',flex: 1},
-                {text:'Estimation Ratio',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},
+                {text:'Estimation Ratio (Current)',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},
                 {text:'Average Daily In-Progress',dataIndex:'health_ratio_in-progress',renderer: TSRenderers.inProgressHealth},
                 {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth},
                 {text:'Last Day Incompletion Ratio',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth},
