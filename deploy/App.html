@@ -3,7 +3,7 @@
 <head>
     <title>Health Check</title>
     <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Mon Sep 09 2013 19:54:10 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 15 2013 16:34:55 GMT-0700 (PDT) -->
     <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
@@ -592,6 +592,7 @@ Ext.define('CustomApp', {
         
         Ext.create('Rally.data.WsapiDataStore',{
             model:'Project',
+            limit: 'Infinity',
             autoLoad: true,
             listeners: {
                 load: function(store,projects) {

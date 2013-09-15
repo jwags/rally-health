@@ -16,6 +16,7 @@ Ext.define('CustomApp', {
         
         Ext.create('Rally.data.WsapiDataStore',{
             model:'Project',
+            limit: 'Infinity',
             autoLoad: true,
             listeners: {
                 load: function(store,projects) {
