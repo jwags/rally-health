@@ -2,7 +2,10 @@ Ext.define('CustomApp', {
     extend: 'Rally.app.App',
     componentCls: 'app',
     logger: new Rally.technicalservices.logger(),
-    items: [ { xtype:'container',itemId:'selector_box', padding: 5, layout: { type:'hbox'} }, { xtype:'container', itemId:'grid_box', padding: 5 } ],
+    items: [ 
+        { xtype:'container',itemId:'selector_box', padding: 5, layout: { type:'hbox'} }, 
+        { xtype:'container', itemId:'grid_box', padding: 5 }
+    ],
     _selected_timebox: null,
     _project_store: null,
     launch: function() {
@@ -13,7 +16,7 @@ Ext.define('CustomApp', {
         var me = this;
         this._projects = [];
         var selected_project_oid = this.getContext().getProject().ObjectID;
-        
+
         Ext.create('Rally.data.WsapiDataStore',{
             model:'Project',
             limit: 'Infinity',
@@ -42,6 +45,7 @@ Ext.define('CustomApp', {
             listeners: {
                 ready: function(cb){
                     this.logger.log(this,"ready");
+                    this.getEl().mask("Loading");
                     this._updateIterationDisplay(cb);
                 },
                 change: function(cb,new_value,old_value){
@@ -236,5 +240,6 @@ Ext.define('CustomApp', {
             ]
         });
         this.down('#grid_box').add(this.grid);
+        this.getEl().unmask();
     }
 });

@@ -3,7 +3,7 @@
 <head>
     <title>Health Check</title>
     <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Sun Sep 15 2013 17:23:42 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 15 2013 17:44:04 GMT-0700 (PDT) -->
     <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
@@ -581,7 +581,10 @@ Ext.define('CustomApp', {
     extend: 'Rally.app.App',
     componentCls: 'app',
     logger: new Rally.technicalservices.logger(),
-    items: [ { xtype:'container',itemId:'selector_box', padding: 5, layout: { type:'hbox'} }, { xtype:'container', itemId:'grid_box', padding: 5 } ],
+    items: [ 
+        { xtype:'container',itemId:'selector_box', padding: 5, layout: { type:'hbox'} }, 
+        { xtype:'container', itemId:'grid_box', padding: 5 }
+    ],
     _selected_timebox: null,
     _project_store: null,
     launch: function() {
@@ -592,7 +595,7 @@ Ext.define('CustomApp', {
         var me = this;
         this._projects = [];
         var selected_project_oid = this.getContext().getProject().ObjectID;
-        
+
         Ext.create('Rally.data.WsapiDataStore',{
             model:'Project',
             limit: 'Infinity',
@@ -621,6 +624,7 @@ Ext.define('CustomApp', {
             listeners: {
                 ready: function(cb){
                     this.logger.log(this,"ready");
+                    this.getEl().mask("Loading");
                     this._updateIterationDisplay(cb);
                 },
                 change: function(cb,new_value,old_value){
@@ -815,6 +819,7 @@ Ext.define('CustomApp', {
             ]
         });
         this.down('#grid_box').add(this.grid);
+        this.getEl().unmask();
     }
 });
             
