@@ -16,12 +16,9 @@
         });
     </script>
     
-    
-<%
-    for ( var i=0, len = css_files.length; i < len; i++ ) {
-        print('<link rel="stylesheet" type="text/css" href="' + css_files[i] + '">');
-    }
-%>
+    <style type="text/css">
+<%= style_contents %>
+    </style>
 
 </head>
 <body></body>
