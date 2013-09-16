@@ -1,14 +1,20 @@
 describe("Fast Project Model tests for ICFD health",function(){
-    var today;
-    var today_minus_1;
-    var today_minus_2;
-    var today_minus_3;
+    var wednesday;
+    var tuesday;
+    var monday;
+    var thursday;
+    var friday;
+    var saturday;
+    var sunday;
     
     beforeEach(function () {
-        today = new Date();
-        today_minus_1 = Rally.util.DateTime.add(today,"day",-1);
-        today_minus_2 = Rally.util.DateTime.add(today,"day",-2);
-        today_minus_3 = Rally.util.DateTime.add(today,"day",-3);
+        friday = new Date(2013,8,20);
+        saturday = new Date(2013,8,21);
+        sunday = new Date(2013,8,22);
+        monday = new Date(2013,8,23);
+        tuesday = new Date(2013,8,24);
+        wednesday = new Date(2013,8,25);
+        thursday = new Date(2013,8,26);
     });
   
     describe("When adding ICFD data", function(){
@@ -25,9 +31,9 @@ describe("Fast Project Model tests for ICFD health",function(){
             
             parent.addChild(child);
             
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             
             parent.setIterationCumulativeFlowData([ accepted_day_1,in_p_day_1,defined_day_1]);
             child.setIterationCumulativeFlowData([ accepted_day_1,in_p_day_1,defined_day_1]);
@@ -53,17 +59,17 @@ describe("Fast Project Model tests for ICFD health",function(){
             });
             
             // Day 1, 20% in progress
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2, 40% in progress
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: today_minus_1 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: today_minus_1 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_1 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: tuesday });
             // Day 3, 15% in progress 
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 8, CreationDate: today });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 8, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
             
             project.setIterationCumulativeFlowData([
                 accepted_day_1,in_p_day_1,defined_day_1,
@@ -72,16 +78,16 @@ describe("Fast Project Model tests for ICFD health",function(){
             ]);
             
             var expected_daily_totals = {};
-            expected_daily_totals[today_minus_2] = 5;
-            expected_daily_totals[today_minus_1] = 10;
-            expected_daily_totals[today] = 11
+            expected_daily_totals[monday] = 5;
+            expected_daily_totals[tuesday] = 10;
+            expected_daily_totals[wednesday] = 11
             
             expect(project.getDailyTotalByState()).toEqual(expected_daily_totals);
             
             var expected_daily_progress_totals = {};
-            expected_daily_progress_totals[today_minus_2] = 1;
-            expected_daily_progress_totals[today_minus_1] = 4;
-            expected_daily_progress_totals[today] = 3;
+            expected_daily_progress_totals[monday] = 1;
+            expected_daily_progress_totals[tuesday] = 4;
+            expected_daily_progress_totals[wednesday] = 3;
             
             expect(project.getDailyTotalByState('In-Progress')).toEqual(expected_daily_progress_totals);
         });
@@ -95,17 +101,17 @@ describe("Fast Project Model tests for ICFD health",function(){
             });
             
             // Day 1, 20% in progress
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2, 40% in progress
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: today_minus_1 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: today_minus_1 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_1 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: tuesday });
             // Day 3, 15% in progress 
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: today });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
             
             project.setIterationCumulativeFlowData([
                 accepted_day_1,in_p_day_1,defined_day_1,
@@ -129,9 +135,9 @@ describe("Fast Project Model tests for ICFD health",function(){
             project.addChild(child);
             
             // Day 1, 20% in progress
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             
             project.setIterationCumulativeFlowData([ accepted_day_1,in_p_day_1,defined_day_1]);
             expect(project.get('health_ratio_in-progress')).toEqual(-1);
@@ -147,17 +153,17 @@ describe("Fast Project Model tests for ICFD health",function(){
             });
             
             // Day 1, 0 accepted
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2, 50% accepted
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: today_minus_1 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_1 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: today_minus_1 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: tuesday });
             // Day 3, a lot accepted
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: today });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
 
             project.setIterationCumulativeFlowData([
                 accepted_day_1,in_p_day_1,defined_day_1,
@@ -165,6 +171,49 @@ describe("Fast Project Model tests for ICFD health",function(){
                 accepted_day_3,in_p_day_3,defined_day_3
             ]);
             expect(project.get('health_half_accepted_ratio')).toEqual(0.67);
+        });
+        
+        it('should determine day count for half accepted when given total days in sprint and discounting weekends',function() {
+            var project = Ext.create('Rally.technicalservices.ProjectModel',{
+                Name: 'Child',
+                ObjectID: 1235
+            });
+            
+            project.set('number_of_days_in_sprint',6);
+            
+            var friday = new Date(2013,8,20);
+            var saturday = new Date(2013,8,21);
+            var sunday = new Date(2013,8,22);
+            var monday = new Date(2013,8,23);
+            
+            project.set('number_of_days_in_sprint',6);
+            
+            console.log('----');
+            // Day 1, 0 accepted
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: friday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: friday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: friday });
+            // Day 2, weekend 1
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: saturday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: saturday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: saturday });
+            // Day 3, weekend 2
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: sunday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: sunday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: sunday });
+            // Day 4, 50% accepted (day 2)
+            var accepted_day_4 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: monday });
+            var in_p_day_4 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_4 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: monday });
+
+            project.setIterationCumulativeFlowData([
+                accepted_day_1,in_p_day_1,defined_day_1,
+                accepted_day_2,in_p_day_2,defined_day_2,
+                accepted_day_3,in_p_day_3,defined_day_3,
+                accepted_day_4,in_p_day_4,defined_day_4
+            ]);
+            expect(project.get('health_half_accepted_ratio')).toEqual(0.33);
+            console.log('----');
         });
         
         it('should determine day count for half accepted when given total days in sprint',function() {
@@ -176,17 +225,17 @@ describe("Fast Project Model tests for ICFD health",function(){
             project.set('number_of_days_in_sprint',6);
             
             // Day 1, 0 accepted
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2, 50% accepted
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: today_minus_1 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_1 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: today_minus_1 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: tuesday });
             // Day 3, a lot accepted
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: today });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
 
             project.setIterationCumulativeFlowData([
                 accepted_day_1,in_p_day_1,defined_day_1,
@@ -204,21 +253,21 @@ describe("Fast Project Model tests for ICFD health",function(){
             });
             
             // Day 1, 0 accepted
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_3 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_3 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_3 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2, 50% accepted
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: today_minus_2 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: today_minus_2 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: tuesday });
             // Day 3, 0% accepted
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_1 });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today_minus_1 });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today_minus_1 });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
             // Day 4, 75% accepted
-            var accepted_day_4 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 3, CreationDate: today });
-            var in_p_day_4 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today });
-            var defined_day_4 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_4 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 3, CreationDate: thursday });
+            var in_p_day_4 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: thursday });
+            var defined_day_4 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: thursday });
             
             project.setIterationCumulativeFlowData([
                 accepted_day_1,in_p_day_1,defined_day_1,
@@ -236,21 +285,21 @@ describe("Fast Project Model tests for ICFD health",function(){
             });
             
             // Day 1, 0 accepted
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_3 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_3 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_3 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2, 50% accepted
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: today_minus_2 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: today_minus_2 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: tuesday });
             // Day 3, 0% accepted
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_1 });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today_minus_1 });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today_minus_1 });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
             // Day 4, 75% accepted
-            var accepted_day_4 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today });
-            var in_p_day_4 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
-            var defined_day_4 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_4 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: thursday });
+            var in_p_day_4 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: thursday });
+            var defined_day_4 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: thursday });
             
             
             project.setIterationCumulativeFlowData([
@@ -269,17 +318,17 @@ describe("Fast Project Model tests for ICFD health",function(){
             });
             
             // Day 1, 0 accepted
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 5, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 5, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2, 50% accepted
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: today_minus_1 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_1 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: today_minus_1 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 4, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 3, CreationDate: tuesday });
             // Day 3, a lot accepted
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: today });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: today });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 17, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 3, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
             
             
             project.setIterationCumulativeFlowData([
@@ -299,20 +348,20 @@ describe("Fast Project Model tests for ICFD health",function(){
             });
             
             // Day 1
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
-            var completed_day_1 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var completed_day_1 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: today_minus_1 });
-            var completed_day_2 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: today_minus_1 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: today_minus_1 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_1 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: tuesday });
+            var completed_day_2 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: tuesday });
             // Day 3 
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 10, CreationDate: today });
-            var completed_day_3 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 10, CreationDate: today });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 10, CreationDate: today });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 10, CreationDate: wednesday });
+            var completed_day_3 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 10, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 10, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
             
             project.setIterationCumulativeFlowData([
                 accepted_day_1,completed_day_1,in_p_day_1,defined_day_1,
@@ -331,20 +380,20 @@ describe("Fast Project Model tests for ICFD health",function(){
             });
             
             // Day 1
-            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: today_minus_2 });
-            var completed_day_1 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: today_minus_2 });
-            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_2 });
+            var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: monday });
+            var completed_day_1 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: monday });
+            var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: monday });
+            var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             // Day 2
-            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: today_minus_1 });
-            var completed_day_2 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: today_minus_1 });
-            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: today_minus_1 });
-            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: today_minus_1 });
+            var accepted_day_2 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: tuesday });
+            var completed_day_2 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 1, CreationDate: tuesday });
+            var in_p_day_2 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: tuesday });
+            var defined_day_2 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: tuesday });
             // Day 3 
-            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: today });
-            var completed_day_3 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 2, CreationDate: today });
-            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: today });
-            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: today });
+            var accepted_day_3 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 2, CreationDate: wednesday });
+            var completed_day_3 = Ext.create('mockCFD',{ CardState:'Completed', CardEstimateTotal: 2, CreationDate: wednesday });
+            var in_p_day_3 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 4, CreationDate: wednesday });
+            var defined_day_3 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 0, CreationDate: wednesday });
             
             project.setIterationCumulativeFlowData([
                 accepted_day_1,completed_day_1,in_p_day_1,defined_day_1,

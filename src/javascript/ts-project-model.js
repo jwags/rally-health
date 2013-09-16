@@ -75,17 +75,20 @@ Ext.define('Rally.technicalservices.ProjectModel',{
                     
             Ext.Array.each(icfd, function(cf) {
                 var card_date = cf.get('CreationDate');
-                var card_estimate = cf.get('CardEstimateTotal');
-                var card_state = cf.get('CardState');
-                
-                if ( !me.daily_totals.All ) { me.daily_totals.All = {}; }
-                if ( !me.daily_totals[card_state]){ me.daily_totals[card_state] = {} }
-                
-                if ( !me.daily_totals.All[card_date] ) { me.daily_totals.All[card_date] = 0; }
-                if ( !me.daily_totals[card_state][card_date] ) { me.daily_totals[card_state][card_date] = 0; }
-    
-                me.daily_totals.All[card_date] += card_estimate;
-                me.daily_totals[card_state][card_date] += card_estimate;
+                // eliminate weekends
+                if ( !card_date || ( card_date.getDay() > 0 && card_date.getDay() < 6 )) {
+                    var card_estimate = cf.get('CardEstimateTotal');
+                    var card_state = cf.get('CardState');
+                    
+                    if ( !me.daily_totals.All ) { me.daily_totals.All = {}; }
+                    if ( !me.daily_totals[card_state]){ me.daily_totals[card_state] = {} }
+                    
+                    if ( !me.daily_totals.All[card_date] ) { me.daily_totals.All[card_date] = 0; }
+                    if ( !me.daily_totals[card_state][card_date] ) { me.daily_totals[card_state][card_date] = 0; }
+        
+                    me.daily_totals.All[card_date] += card_estimate;
+                    me.daily_totals[card_state][card_date] += card_estimate;
+                }
             });
             
             this._setAverageInProgress();
@@ -136,17 +139,17 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             var day_index = -1;
             var day_counter = 0;
             for ( var card_date in all_hash ) {
-                day_counter++;
-                
-                var day_total = all_hash[card_date];
-                var day_accepted = accepted_hash[card_date] || 0;
-                
-                if ( day_accepted/day_total >= 0.5 && day_index === -1 ) {
-                    day_index = day_counter;
-                } else if ( day_accepted/day_total < 0.5 && day_index > -1 ) {
-                    // if we slipped back to under 50%
-                    day_index = -1;
-                }
+                    day_counter++;
+                    
+                    var day_total = all_hash[card_date];
+                    var day_accepted = accepted_hash[card_date] || 0;
+                    
+                    if ( day_accepted/day_total >= 0.5 && day_index === -1 ) {
+                        day_index = day_counter;
+                    } else if ( day_accepted/day_total < 0.5 && day_index > -1 ) {
+                        // if we slipped back to under 50%
+                        day_index = -1;
+                    }
             }
             var ratio = 2;
             if ( day_index > -1 ) {
