@@ -14,6 +14,7 @@ var useObjectID = function(value,record) {
 
 Ext.define('Rally.technicalservices.ProjectModel',{
     extend: 'Ext.data.Model',
+    require: ['Rally.technicalservices.util.Utilities'],
     fields: [
         {name:'ObjectID', type: 'int'},
         {name:'Name',type:'string'},
@@ -21,6 +22,10 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'id',type:'int',convert:useObjectID},
         {name:'text',type:'string',convert:useName},
         {name:'number_of_days_in_sprint',type:'int',defaultValue:-1},
+        /* values from the one associated iteration */
+        {name:'iteration_name',type:'string',defaultValue:''},
+        {name:'iteration_end_date',type:'auto'},
+        {name:'iteration_start_date',type:'auto'},
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
@@ -51,6 +56,16 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             this.set('children',[child]);
         }
         this.set('child_count',this.get('children').length);
+    },
+    addIteration: function(iteration) {
+        if (typeof(iteration.get) == "function" ) {
+            iteration = iteration.getData();
+        }
+
+        this.set('iteration_name',iteration.Name);
+        this.set('iteration_start_date',iteration.StartDate);
+        this.set('iteration_end_date',iteration.EndDate);
+        this.set('number_of_days_in_sprint',Rally.technicalservices.util.Utilities.daysBetween(iteration.StartDate,iteration.EndDate,true)+1);
     },
     /**
      * override because we just want the kids without going through a load process

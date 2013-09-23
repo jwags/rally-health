@@ -6,11 +6,37 @@ Ext.define('CustomApp', {
         { xtype:'container',itemId:'selector_box', padding: 5, layout: { type:'hbox'} }, 
         { xtype:'container', itemId:'grid_box', padding: 5 }
     ],
-    _selected_timebox: null,
     _project_store: null,
     launch: function() {
-        this._getProjects();
-        this._addIterationSelector();
+        this._getIterations();
+    },
+    _getIterations: function() {
+        var me = this;
+        var number_of_iterations = 3;
+        var today_iso = Rally.util.DateTime.toIsoString(new Date());
+        Ext.create('Rally.data.WsapiDataStore',{
+            model:'Iteration',
+            limit: number_of_iterations,
+            pageSize: number_of_iterations,
+            autoLoad: true,
+            sorters: [{ property: 'EndDate', direction: 'DESC' }],
+            filters: [{ property: 'EndDate', operator: '<', value: today_iso}],
+            context: { projectScopeDown: false },
+            listeners: {
+                scope: this,
+                load: function(store,iterations){
+                    this.logger.log(this,iterations);
+                    var ts_iterations = this._makeTSIterationArray(iterations);
+                    this.logger.log(this,ts_iterations);
+                    
+                    this._project_store = Ext.create('Rally.technicalservices.ProjectStore',{
+                        data: ts_iterations
+                    });
+                    
+                    this._project_store.load(function() { me._processData(); } );
+                }
+            }
+        });
     },
     _getProjects: function() {
         var me = this;
@@ -45,12 +71,21 @@ Ext.define('CustomApp', {
             listeners: {
                 ready: function(cb){
                     this.logger.log(this,"ready");
-                    this.getEl().mask("Loading");
-                    this._updateIterationDisplay(cb);
+                    if ( cb.getValue() ) {
+                        this.getEl().mask("Loading");
+                        this._updateIterationDisplay(cb);
+                    } else {
+                        this.logger.log(this,"No iteration selected");
+                    }
                 },
                 change: function(cb,new_value,old_value){
                     this.logger.log(this,"change");
-                    this._updateIterationDisplay(cb);
+                    if ( cb.getValue() ) {
+                        this.getEl().mask("Loading");
+                        this._updateIterationDisplay(cb);
+                    } else {
+                        this.logger.log(this,"No iteration selected");
+                    }
                 },
                 scope: this
             }
@@ -92,17 +127,17 @@ Ext.define('CustomApp', {
         this._processData();
     },
     _processData:function() {
+        this.logger.log(this,"Processing Data");
         var me = this;
-        if ( me._project_store && me._selected_timebox) {
+        if ( me._project_store ) {
             me._return_counter = 0; // the calls for iterations are asynchronous, so we need to count returns
             var projects = me._project_store.getRecords();
             
-            me.logger.log(this,"Sending requests for " + projects.length + " projects");
             Ext.Array.each(projects,function(project){
                 project.resetHealth();
-                project.set('number_of_days_in_sprint',me._selected_timebox.get('number_of_days_in_sprint'));
-                me._setArtifactHealth(me._selected_timebox.get('Name'),project);
-                me._setCumulativeHealth(me._selected_timebox.get('Name'),project);
+                //project.set('number_of_days_in_sprint',me._selected_timebox.get('number_of_days_in_sprint'));
+                me._setArtifactHealth(project.get('iteration_name'),project);
+                me._setCumulativeHealth(project.get('iteration_name'),project);
             });
 
             this._makeGrid(this._project_store);
@@ -116,43 +151,25 @@ Ext.define('CustomApp', {
      */
     _setCumulativeHealth:function(iteration_name,project){
         var me = this;
-        // sadly, all iteration records are separate.  we have to get the one for this project and then get the
-        // cumulative flow data
+        
+        // we've switched to the "project" object have the id of the iteration
+        var iteration_oid = project.get('ObjectID');
         Ext.create('Rally.data.WsapiDataStore',{
-            model:'Iteration',
-            fetch: 'ObjectID',
+            model:'IterationCumulativeFlowData',
             autoLoad: true,
-            filters: [
-                {property:'Name',value:iteration_name},
-                {property:'Project.ObjectID',value:project.get('ObjectID')}
-            ],
+            filters: [{property:'IterationObjectID',value:iteration_oid}],
             listeners: {
-                load: function(store,records) {
-                    me.logger.log(this,project.get('Name'),"iteration",records);
+                load: function(store,records){
                     if ( records.length === 0 ) {
-                        project.resetHealth();
-                        me.logger.log(this, project.get('Name') , "No iteration found for project ");
-                    }else{
-                        var iteration_oid = records[0].get('ObjectID');
-                        Ext.create('Rally.data.WsapiDataStore',{
-                            model:'IterationCumulativeFlowData',
-                            autoLoad: true,
-                            filters: [{property:'IterationObjectID',value:iteration_oid}],
-                            listeners: {
-                                load: function(store,records){
-                                    if ( records.length === 0 ) {
-                                        me.logger.log(this, project.get('Name'), "No cumulative flow data found for project ");
-                                    } else {
-                                        me.logger.log(this,project.get('Name'),'CFD',records);
-                                        project.setIterationCumulativeFlowData(records);
-                                    }
-                                }
-                            }
-                        });
+                        me.logger.log(this, project.get('Name'), "No cumulative flow data found for project ");
+                    } else {
+                        me.logger.log(this,project.get('Name'),'CFD',records);
+                        project.setIterationCumulativeFlowData(records);
                     }
                 }
             }
-        })
+        });
+              
     },
     /*
      * (health related to data we can get from the artifacts themselves)
@@ -165,8 +182,7 @@ Ext.define('CustomApp', {
         
         var artifacts = []; // have to get both stories and defects
         var filters = [
-            {property:'Iteration.Name',value:iteration_name},
-            {property:'Project.ObjectID',value:project.get('ObjectID')}
+            {property:'Iteration.Name',value:iteration_name}
         ];
         
         var fetch = ['ObjectID','PlanEstimate','ScheduleState'];
@@ -219,6 +235,26 @@ Ext.define('CustomApp', {
         });
         return structured_projects;
     },
+    // given a set of Rally iteration objects, turn them into TS projects
+    // the key of the hash is the project's ObjectID
+    _makeTSIterationArray: function(iterations) {
+        var iteration_array = []; // key is oid
+        
+        // change into our version of the project model
+        Ext.Array.each(iterations,function(iteration){
+            
+            var iteration_row = Ext.create('Rally.technicalservices.ProjectModel',{
+                ObjectID: iteration.get('ObjectID'),
+                Name: iteration.get('Name')
+            });
+            
+            iteration_row.addIteration(iteration);
+            iteration_array.push(iteration_row);
+            
+        });
+        
+        return iteration_array;
+    },
     /*
      * Given an array of projects, make a grid
      */
@@ -231,7 +267,10 @@ Ext.define('CustomApp', {
             height: 400,
             sortableColumns: false,
             columnCfgs: [
-                {text:'Project',dataIndex:'Name',flex: 1},
+                {text:'Iteration',dataIndex:'iteration_name',flex: 1},
+                {text:'Start Date',dataIndex:'iteration_start_date',renderer:TSRenderers.shortDate},
+                {text:'End Date',dataIndex:'iteration_end_date',renderer:TSRenderers.shortDate},
+                {text:'# Days',dataIndex:'number_of_days_in_sprint'},
                 {text:'Estimation Ratio (Current)',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},
                 {text:'Average Daily In-Progress',dataIndex:'health_ratio_in-progress',renderer: TSRenderers.inProgressHealth},
                 {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth},

@@ -98,6 +98,10 @@ Ext.define('TSRenderers', {
         }
         metaData.style = "background-color: " + color;
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
+    },
+    
+    shortDate: function(value) {
+        return Rally.util.DateTime.formatWithNoYearWithDefault(value);
     }
     
 });

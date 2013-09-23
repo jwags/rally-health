@@ -92,8 +92,8 @@ Ext.define('Rally.technicalservices.util.Utilities', {
         return result;
     },
     daysBetween: function(begin_date_js,end_date_js,skip_weekends){
-        var dDate1 = begin_date_js.setHours(0,0,0,0);
-        var dDate2 = end_date_js.setHours(0,0,0,0);
+        var dDate1 = Ext.clone(begin_date_js).setHours(0,0,0,0);
+        var dDate2 = Ext.clone(end_date_js).setHours(0,0,0,0);
         
         if ( dDate1 == dDate2 ) { return 0; }
         if (typeof dDate1 === "number") { dDate1 = new Date(dDate1); }

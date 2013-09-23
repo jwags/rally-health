@@ -3,7 +3,12 @@ var useObjectID = function(value,record) {
         return record.get('ObjectID');
     } 
     return 0;
-}
+};
+
+var shiftDayBeginningToEnd = function(day) {
+    return Rally.util.DateTime.add(Rally.util.DateTime.add(day,'hour',11), 'minute',59);
+};
+
 Ext.define('mockStory',{
     extend: 'Ext.data.Model',
     fields: [
@@ -12,6 +17,17 @@ Ext.define('mockStory',{
         {name:'PlanEstimate',type:'int'},
         {name:'id',type:'int',convert:useObjectID},
         {name:'ScheduleState',type:'string',defaultValue:'Defined'}
+    ]
+});
+
+Ext.define('mockIteration',{
+    extend: 'Ext.data.Model',
+    fields: [
+        {name:'ObjectID', type: 'int'},
+        {name:'Name',type:'string'},
+        {name:'StartDate',type:'auto'},
+        {name:'EndDate',type:'auto'},
+        {name:'id',type:'int',convert:useObjectID}
     ]
 });
 
