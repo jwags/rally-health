@@ -91,22 +91,24 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         if ( this.get('child_count')  > 0 ) {
             this.set('health_ratio_in-progress',-1);
         } else {
-                    
             Ext.Array.each(icfd, function(cf) {
                 var card_date = cf.get('CreationDate');
                 // eliminate weekends
                 if ( !card_date || ( card_date.getDay() > 0 && card_date.getDay() < 6 )) {
-                    var card_estimate = cf.get('CardEstimateTotal');
-                    var card_state = cf.get('CardState');
-                    
-                    if ( !me.daily_totals.All ) { me.daily_totals.All = {}; }
-                    if ( !me.daily_totals[card_state]){ me.daily_totals[card_state] = {} }
-                    
-                    if ( !me.daily_totals.All[card_date] ) { me.daily_totals.All[card_date] = 0; }
-                    if ( !me.daily_totals[card_state][card_date] ) { me.daily_totals[card_state][card_date] = 0; }
-        
-                    me.daily_totals.All[card_date] += card_estimate;
-                    me.daily_totals[card_state][card_date] += card_estimate;
+                    // eliminate outside the sprint dates if we have them
+                    if ( me._isInsideSprint(card_date) ) {
+                        var card_estimate = cf.get('CardEstimateTotal');
+                        var card_state = cf.get('CardState');
+                        
+                        if ( !me.daily_totals.All ) { me.daily_totals.All = {}; }
+                        if ( !me.daily_totals[card_state]){ me.daily_totals[card_state] = {} }
+                        
+                        if ( !me.daily_totals.All[card_date] ) { me.daily_totals.All[card_date] = 0; }
+                        if ( !me.daily_totals[card_state][card_date] ) { me.daily_totals[card_state][card_date] = 0; }
+            
+                        me.daily_totals.All[card_date] += card_estimate;
+                        me.daily_totals[card_state][card_date] += card_estimate;
+                    }
                 }
             });
             
@@ -190,6 +192,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
                 if ( this.get('number_of_days_in_sprint') > -1 ) {
                     day_counter = this.get('number_of_days_in_sprint');
                 }
+
                 ratio = Ext.util.Format.number(day_index/day_counter,"0.00");
             }
             this.set('health_half_accepted_ratio',ratio);
@@ -327,6 +330,16 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         var deviation = Math.sqrt(numerator / an_array.length);
         
         return deviation;
+    },
+    _isInsideSprint: function(card_date) {
+        
+        if ( this.get('iteration_end_date') && this.get('iteration_start_date') ) {
+            var end = this.get('iteration_end_date');
+            var start = this.get('iteration_start_date');
+            return ( card_date <= end && card_date >= start );
+        } else {
+            return true;
+        }
     },
     resetHealth: function() {
         if ( this.get('child_count')  > 0 ) {
