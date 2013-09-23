@@ -99,7 +99,25 @@ Ext.define('TSRenderers', {
         metaData.style = "background-color: " + color;
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     },
-    
+    churnHealth: function(value,metaData) {
+        if ( value < 0 ) {
+            return "<div style='text-align:center'>No Data</div>";
+        }
+        var percent = parseInt( 100 * value, 10 );
+        
+        return "<div style='text-align:center'>" + percent + "%</div>";
+    },
+    churnDirection: function(value,metaData) {
+        var display_value = " ";
+        if ( value === -2 ) {
+            display_value = "No Data";
+        } else if ( value < 0 ) { 
+            display_value = "<img src='/slm/mashup/1.11//images/minus.gif' title='down'>";
+        } else if ( value > 0 ) {
+            display_value = "<img src='/slm/mashup/1.11//images/plus.gif' title='up'>";
+        }
+        return "<div style='text-align:center'>" + display_value + "</div>";
+    },
     shortDate: function(value) {
         return Rally.util.DateTime.formatWithNoYearWithDefault(value);
     }

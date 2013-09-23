@@ -188,7 +188,6 @@ describe("Fast Project Model tests for ICFD health",function(){
             
             project.set('number_of_days_in_sprint',6);
             
-            console.log('----');
             // Day 1, 0 accepted
             var accepted_day_1 = Ext.create('mockCFD',{ CardState:'Accepted', CardEstimateTotal: 0, CreationDate: friday });
             var in_p_day_1 = Ext.create('mockCFD',{ CardState:'In-Progress', CardEstimateTotal: 1, CreationDate: friday });
@@ -213,7 +212,6 @@ describe("Fast Project Model tests for ICFD health",function(){
                 accepted_day_4,in_p_day_4,defined_day_4
             ]);
             expect(project.get('health_half_accepted_ratio')).toEqual(0.33);
-            console.log('----');
         });
         
         it('should determine day count for half accepted when given total days in sprint',function() {

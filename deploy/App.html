@@ -3,7 +3,7 @@
 <head>
     <title>Health Check</title>
     <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Sun Sep 22 2013 17:44:18 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Sep 22 2013 20:14:11 GMT-0700 (PDT) -->
     <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
@@ -142,7 +142,25 @@ Ext.define('TSRenderers', {
         metaData.style = "background-color: " + color;
         return "<div style='text-align:center;background-color:" + color + "'>"+ text + "</div>";
     },
-    
+    churnHealth: function(value,metaData) {
+        if ( value < 0 ) {
+            return "<div style='text-align:center'>No Data</div>";
+        }
+        var percent = parseInt( 100 * value, 10 );
+        
+        return "<div style='text-align:center'>" + percent + "%</div>";
+    },
+    churnDirection: function(value,metaData) {
+        var display_value = " ";
+        if ( value === -2 ) {
+            display_value = "No Data";
+        } else if ( value < 0 ) { 
+            display_value = "<img src='/slm/mashup/1.11//images/minus.gif' title='down'>";
+        } else if ( value > 0 ) {
+            display_value = "<img src='/slm/mashup/1.11//images/plus.gif' title='up'>";
+        }
+        return "<div style='text-align:center'>" + display_value + "</div>";
+    },
     shortDate: function(value) {
         return Rally.util.DateTime.formatWithNoYearWithDefault(value);
     }
@@ -307,18 +325,21 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'parent_id',type:'int'},
         {name:'id',type:'int',convert:useObjectID},
         {name:'text',type:'string',convert:useName},
-        {name:'number_of_days_in_sprint',type:'int',defaultValue:-1},
         /* values from the one associated iteration */
         {name:'iteration_name',type:'string',defaultValue:''},
         {name:'iteration_end_date',type:'auto'},
         {name:'iteration_start_date',type:'auto'},
+        {name:'number_of_days_in_sprint',type:'int',defaultValue:-1},
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
         {name:'health_ratio_in-progress',type:'float',defaultValue:0},
         {name:'health_half_accepted_ratio',type:'float',defaultValue:2},
         {name:'health_end_incompletion_ratio',type:'float',defaultValue:2},
-        {name:'health_end_acceptance_ratio',type:'float',defaultValue:2}
+        {name:'health_end_acceptance_ratio',type:'float',defaultValue:2},
+        {name:'health_churn',type:'float',defaultValue:-2},
+        {name:'health_churn_direction',type:'float',defaultValue:-2},
+        {name:'health_churn_task',type:'float',defaultValue:-2}
     ],
     hasMany:[{model:'Rally.technicalservices.ProjectModel', name:'children'}],
     associations: [
@@ -364,6 +385,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         });
         return { 'children': children };
     },
+
     /**
      * Given an array of iteration cumulative flow objects, calculate a few health metrics
      */
@@ -396,6 +418,21 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             this._setHalfAcceptanceRatio();
             this._setAcceptanceRatio();
             this._setIncompletionRatio();
+            this._setChurn();
+        }
+    },
+    _setChurn: function(){
+        var me = this;
+        var all_hash = this.getDailyTotalByState();
+        if ( all_hash ) {
+            var daily_totals = [];
+            for ( var card_date in all_hash ) {
+                daily_totals.push(all_hash[card_date]);
+            }
+            var standard_deviation = this._getStandardDeviation(daily_totals);
+            var deviation_ratio = Ext.util.Format.number(standard_deviation/Ext.Array.mean(daily_totals),"0.00");
+            this.set('health_churn',deviation_ratio);
+            this.set('health_churn_direction',me._getChurnDirection(daily_totals));
         }
     },
     /**
@@ -559,6 +596,42 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             }
         }
     },
+    /**
+     * Go through the array of day totals.  If there are
+     * more going up than down, return 1, if more going down than
+     * going up, return -1 
+     */
+    _getChurnDirection: function(day_totals) {
+        var variance = 0;
+        var last_value = 0;
+        Ext.Array.each(day_totals, function(day_total,index){
+            if ( index > 0 ) {
+                variance = variance + ( day_total - last_value );
+            }
+            last_value = day_total;
+            
+        });
+        
+        return  variance && variance / Math.abs(variance);
+    },
+    /**
+     * 
+     * @param {} an_array  an array of numbers
+     * 
+     * returns the standard deviation
+     */
+    _getStandardDeviation: function(an_array){
+        var mean = Ext.Array.mean(an_array);
+        var numerator = 0;
+        
+        Ext.Array.each(an_array,function(item){
+            numerator += ( mean - item ) * ( mean - item ) ;
+        });
+        
+        var deviation = Math.sqrt(numerator / an_array.length);
+        
+        return deviation;
+    },
     resetHealth: function() {
         if ( this.get('child_count')  > 0 ) {
             this.set('health_ratio_estimated',-1);
@@ -573,6 +646,9 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             this.set('health_end_incompletion_ratio',2);
             this.set('health_end_acceptance_ratio',2);
         }
+        this.set('health_churn',-2);
+        this.set('health_churn_direction',-2);
+        this.set('health_churn_tasks',-2);
     }
 });
 /*
@@ -922,7 +998,7 @@ Ext.define('CustomApp', {
             height: 400,
             sortableColumns: false,
             columnCfgs: [
-                {text:'Iteration',dataIndex:'iteration_name',flex: 1},
+                {text:'Iteration',dataIndex:'iteration_name',flex: 2},
                 {text:'Start Date',dataIndex:'iteration_start_date',renderer:TSRenderers.shortDate},
                 {text:'End Date',dataIndex:'iteration_end_date',renderer:TSRenderers.shortDate},
                 {text:'# Days',dataIndex:'number_of_days_in_sprint'},
@@ -930,7 +1006,9 @@ Ext.define('CustomApp', {
                 {text:'Average Daily In-Progress',dataIndex:'health_ratio_in-progress',renderer: TSRenderers.inProgressHealth},
                 {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth},
                 {text:'Last Day Incompletion Ratio',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth},
-                {text:'Last Day Acceptance Ratio',dataIndex:'health_end_acceptance_ratio',renderer:TSRenderers.acceptanceHealth}
+                {text:'Last Day Acceptance Ratio',dataIndex:'health_end_acceptance_ratio',renderer:TSRenderers.acceptanceHealth},
+                {text:'Churn',dataIndex:'health_churn',renderer:TSRenderers.churnHealth},
+                {text:'Churn Direction',dataIndex:'health_churn_direction',renderer:TSRenderers.churnDirection}
             ]
         });
         this.down('#grid_box').add(this.grid);

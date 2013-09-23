@@ -154,7 +154,6 @@ describe("Fast Utilities tests",function() {
                 }]
             }; 
             var result = Rally.technicalservices.util.Utilities.getFromHashByField(hash,"ObjectID",1236);
-            console.log(result);
             expect(result.ObjectID).toEqual(1236);
             expect(result.children.length).toEqual(1);
             expect(result.children[0].Name).toEqual('Child a');

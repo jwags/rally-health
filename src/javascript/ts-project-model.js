@@ -21,18 +21,21 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         {name:'parent_id',type:'int'},
         {name:'id',type:'int',convert:useObjectID},
         {name:'text',type:'string',convert:useName},
-        {name:'number_of_days_in_sprint',type:'int',defaultValue:-1},
         /* values from the one associated iteration */
         {name:'iteration_name',type:'string',defaultValue:''},
         {name:'iteration_end_date',type:'auto'},
         {name:'iteration_start_date',type:'auto'},
+        {name:'number_of_days_in_sprint',type:'int',defaultValue:-1},
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
         {name:'health_ratio_in-progress',type:'float',defaultValue:0},
         {name:'health_half_accepted_ratio',type:'float',defaultValue:2},
         {name:'health_end_incompletion_ratio',type:'float',defaultValue:2},
-        {name:'health_end_acceptance_ratio',type:'float',defaultValue:2}
+        {name:'health_end_acceptance_ratio',type:'float',defaultValue:2},
+        {name:'health_churn',type:'float',defaultValue:-2},
+        {name:'health_churn_direction',type:'float',defaultValue:-2},
+        {name:'health_churn_task',type:'float',defaultValue:-2}
     ],
     hasMany:[{model:'Rally.technicalservices.ProjectModel', name:'children'}],
     associations: [
@@ -78,6 +81,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         });
         return { 'children': children };
     },
+
     /**
      * Given an array of iteration cumulative flow objects, calculate a few health metrics
      */
@@ -110,6 +114,21 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             this._setHalfAcceptanceRatio();
             this._setAcceptanceRatio();
             this._setIncompletionRatio();
+            this._setChurn();
+        }
+    },
+    _setChurn: function(){
+        var me = this;
+        var all_hash = this.getDailyTotalByState();
+        if ( all_hash ) {
+            var daily_totals = [];
+            for ( var card_date in all_hash ) {
+                daily_totals.push(all_hash[card_date]);
+            }
+            var standard_deviation = this._getStandardDeviation(daily_totals);
+            var deviation_ratio = Ext.util.Format.number(standard_deviation/Ext.Array.mean(daily_totals),"0.00");
+            this.set('health_churn',deviation_ratio);
+            this.set('health_churn_direction',me._getChurnDirection(daily_totals));
         }
     },
     /**
@@ -273,6 +292,42 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             }
         }
     },
+    /**
+     * Go through the array of day totals.  If there are
+     * more going up than down, return 1, if more going down than
+     * going up, return -1 
+     */
+    _getChurnDirection: function(day_totals) {
+        var variance = 0;
+        var last_value = 0;
+        Ext.Array.each(day_totals, function(day_total,index){
+            if ( index > 0 ) {
+                variance = variance + ( day_total - last_value );
+            }
+            last_value = day_total;
+            
+        });
+        
+        return  variance && variance / Math.abs(variance);
+    },
+    /**
+     * 
+     * @param {} an_array  an array of numbers
+     * 
+     * returns the standard deviation
+     */
+    _getStandardDeviation: function(an_array){
+        var mean = Ext.Array.mean(an_array);
+        var numerator = 0;
+        
+        Ext.Array.each(an_array,function(item){
+            numerator += ( mean - item ) * ( mean - item ) ;
+        });
+        
+        var deviation = Math.sqrt(numerator / an_array.length);
+        
+        return deviation;
+    },
     resetHealth: function() {
         if ( this.get('child_count')  > 0 ) {
             this.set('health_ratio_estimated',-1);
@@ -287,5 +342,8 @@ Ext.define('Rally.technicalservices.ProjectModel',{
             this.set('health_end_incompletion_ratio',2);
             this.set('health_end_acceptance_ratio',2);
         }
+        this.set('health_churn',-2);
+        this.set('health_churn_direction',-2);
+        this.set('health_churn_tasks',-2);
     }
 });

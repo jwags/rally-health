@@ -324,7 +324,7 @@ Ext.define('CustomApp', {
             height: 400,
             sortableColumns: false,
             columnCfgs: [
-                {text:'Iteration',dataIndex:'iteration_name',flex: 1},
+                {text:'Iteration',dataIndex:'iteration_name',flex: 2},
                 {text:'Start Date',dataIndex:'iteration_start_date',renderer:TSRenderers.shortDate},
                 {text:'End Date',dataIndex:'iteration_end_date',renderer:TSRenderers.shortDate},
                 {text:'# Days',dataIndex:'number_of_days_in_sprint'},
@@ -332,7 +332,9 @@ Ext.define('CustomApp', {
                 {text:'Average Daily In-Progress',dataIndex:'health_ratio_in-progress',renderer: TSRenderers.inProgressHealth},
                 {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth},
                 {text:'Last Day Incompletion Ratio',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth},
-                {text:'Last Day Acceptance Ratio',dataIndex:'health_end_acceptance_ratio',renderer:TSRenderers.acceptanceHealth}
+                {text:'Last Day Acceptance Ratio',dataIndex:'health_end_acceptance_ratio',renderer:TSRenderers.acceptanceHealth},
+                {text:'Churn',dataIndex:'health_churn',renderer:TSRenderers.churnHealth},
+                {text:'Churn Direction',dataIndex:'health_churn_direction',renderer:TSRenderers.churnDirection}
             ]
         });
         this.down('#grid_box').add(this.grid);
