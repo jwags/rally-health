@@ -319,6 +319,41 @@ Ext.define('CustomApp', {
         
         if ( this.grid ) { this.grid.destroy(); }
         
+        var column_listeners_churn = {
+            scope: this,
+            headerclick: function( ct, column, e, t, eOpts ) {
+                this.logger.log(ct, "column", column);
+                this.logger.log(ct, "e", e);
+                this.logger.log(ct, "t", t);
+                this.logger.log(ct, "eOpts", eOpts);
+                if (this.popover){this.popover.destroy();}
+                this.popover = Ext.create('Rally.ui.popover.Popover',{
+                    target: Ext.get(t),
+                    items: [{xtype:'container',html:"Churn is a measure of the change in the iteration's scope.<br/><br/>" +
+                            "It is defined as the standard deviation of the total scheduled into the sprint divided by the " +
+                            "average daily total."}]
+                });
+                this.popover.show();
+            }
+        };
+        var column_listeners_churn_direction = {
+            scope: this,
+            headerclick: function( ct, column, e, t, eOpts ) {
+                this.logger.log(ct, "column", column);
+                this.logger.log(ct, "e", e);
+                this.logger.log(ct, "t", t);
+                this.logger.log(ct, "eOpts", eOpts);
+                if (this.popover){this.popover.destroy();}
+                this.popover = Ext.create('Rally.ui.popover.Popover',{
+                    target: Ext.get(t),
+                    items: [{xtype:'container',html:"Churn Direction is an indicator of the general direction of scope change.<br/><br/>" +
+                            "It is determined by examining every day's change from the day before and adding or subtracting <br/>" +
+                            "the delta to determine whether scope has been added more often than subtracted. (The first day of <br/>" +
+                            "the iteration is excluded from this calculation.)"}]
+                });
+                this.popover.show();
+            }
+        };
         this.grid = Ext.create('Rally.ui.grid.Grid',{
             store: store,
             height: 400,
@@ -333,8 +368,8 @@ Ext.define('CustomApp', {
                 {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth},
                 {text:'Last Day Incompletion Ratio',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth},
                 {text:'Last Day Acceptance Ratio',dataIndex:'health_end_acceptance_ratio',renderer:TSRenderers.acceptanceHealth},
-                {text:'Churn',dataIndex:'health_churn',renderer:TSRenderers.churnHealth},
-                {text:'Churn Direction',dataIndex:'health_churn_direction',renderer:TSRenderers.churnDirection}
+                {text:'Churn',dataIndex:'health_churn',renderer:TSRenderers.churnHealth,listeners: column_listeners_churn },
+                {text:'Churn Direction',dataIndex:'health_churn_direction',renderer:TSRenderers.churnDirection,listeners: column_listeners_churn_direction}
             ]
         });
         this.down('#grid_box').add(this.grid);
