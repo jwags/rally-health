@@ -8,11 +8,68 @@ Ext.define('CustomApp', {
     ],
     _project_store: null,
     launch: function() {
-        this._getIterations();
+        this.number_of_iterations = 3;
+        this._addIterationCountSelector();
+    },
+    _addIterationCountSelector: function() {
+        
+        var counter_store = Ext.create('Rally.data.custom.Store',{
+            data: [
+                {
+                    Name: 3
+                },
+                {
+                    Name: 4
+                },
+                {
+                    Name: 5
+                },
+                {
+                    Name: 6
+                },
+                {
+                    Name: 7
+                },
+                {
+                    Name: 8
+                },
+                {
+                    Name: 9
+                },
+                {
+                    Name: 10
+                }
+            ]
+        });
+        var me = this;
+        
+        this.down('#selector_box').add({
+            xtype: 'rallycombobox',
+            fieldLabel: 'Number of Iterations',
+            store: counter_store,
+            displayField: 'Name',
+            valueField: 'Name',
+            width: 150,
+            labelWidth: 100,
+            value: me.number_of_iterations,
+            listeners: {
+                scope: this,
+                ready: function(cb) {
+                    me.logger.log(this,"ready",cb.getValue());
+                    me.number_of_iterations = cb.getValue();
+                    me._getIterations();
+                },
+                change: function(cb) {
+                    me.logger.log(this,"change",cb.getValue());
+                    me.number_of_iterations = cb.getValue();
+                    me._getIterations();
+                }
+            }
+        });
     },
     _getIterations: function() {
         var me = this;
-        var number_of_iterations = 3;
+        var number_of_iterations = this.number_of_iterations;
         var today_iso = Rally.util.DateTime.toIsoString(new Date());
         Ext.create('Rally.data.WsapiDataStore',{
             model:'Iteration',
