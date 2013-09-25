@@ -40,8 +40,8 @@ describe("Fast Project Model tests for ICFD health",function(){
             
             parent.resetHealth();
             child.resetHealth();
-            expect(child.get('health_ratio_in-progress')).toEqual(0);
-            expect(parent.get('health_ratio_in-progress')).toEqual(-1);
+            expect(child.get('health_ratio_in_progress')).toEqual(0);
+            expect(parent.get('health_ratio_in_progress')).toEqual(-1);
             expect(child.get('health_half_accepted_ratio')).toEqual(2);
             expect(parent.get('health_half_accepted_ratio')).toEqual(-1);
             expect(child.get('health_end_incompletion_ratio')).toEqual(2);
@@ -118,7 +118,7 @@ describe("Fast Project Model tests for ICFD health",function(){
                 accepted_day_2,in_p_day_2,defined_day_2,
                 accepted_day_3,in_p_day_3,defined_day_3
             ]);
-            expect(project.get('health_ratio_in-progress')).toEqual(0.25);
+            expect(project.get('health_ratio_in_progress')).toEqual(0.25);
         });
 
         it('should not calculate a ratio for parents',function() {
@@ -140,7 +140,7 @@ describe("Fast Project Model tests for ICFD health",function(){
             var defined_day_1 = Ext.create('mockCFD',{ CardState:'Defined', CardEstimateTotal: 4, CreationDate: monday });
             
             project.setIterationCumulativeFlowData([ accepted_day_1,in_p_day_1,defined_day_1]);
-            expect(project.get('health_ratio_in-progress')).toEqual(-1);
+            expect(project.get('health_ratio_in_progress')).toEqual(-1);
             
         });
     });

@@ -29,7 +29,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
-        {name:'health_ratio_in-progress',type:'float',defaultValue:0},
+        {name:'health_ratio_in_progress',type:'float',defaultValue:0},
         {name:'health_half_accepted_ratio',type:'float',defaultValue:2},
         {name:'health_end_incompletion_ratio',type:'float',defaultValue:2},
         {name:'health_end_acceptance_ratio',type:'float',defaultValue:2},
@@ -43,7 +43,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
     ],
     addChild: function(child) {
         this.set('health_ratio_estimated',-1);
-        this.set('health_ratio_in-progress',-1);
+        this.set('health_ratio_in_progress',-1);
         this.set('health_half_accepted_ratio',-1);
         this.set('health_end_incompletion_ratio',-1);
         this.set('health_end_acceptance_ratio',-1);
@@ -89,7 +89,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         var me = this;
         this.daily_totals = {};
         if ( this.get('child_count')  > 0 ) {
-            this.set('health_ratio_in-progress',-1);
+            this.set('health_ratio_in_progress',-1);
         } else {
             Ext.Array.each(icfd, function(cf) {
                 var card_date = cf.get('CreationDate');
@@ -145,7 +145,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         var ip_hash = this.getDailyTotalByState("In-Progress");
 
         if (!all_hash || !ip_hash) { 
-            this.set('health_ratio_in-progress',0); 
+            this.set('health_ratio_in_progress',0); 
         } else {
             var totals = [];
 
@@ -155,7 +155,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
                 
                 totals.push( day_ip/day_total );
             }
-            this.set('health_ratio_in-progress',Ext.util.Format.number(Ext.Array.mean(totals),"0.00"));
+            this.set('health_ratio_in_progress',Ext.util.Format.number(Ext.Array.mean(totals),"0.00"));
         }
     },
     /**
@@ -344,13 +344,13 @@ Ext.define('Rally.technicalservices.ProjectModel',{
     resetHealth: function() {
         if ( this.get('child_count')  > 0 ) {
             this.set('health_ratio_estimated',-1);
-            this.set('health_ratio_in-progress',-1);
+            this.set('health_ratio_in_progress',-1);
             this.set('health_half_accepted_ratio',-1);
             this.set('health_end_incompletion_ratio',-1);
             this.set('health_end_acceptance_ratio',-1);
         } else {
             this.set('health_ratio_estimated',0);
-            this.set('health_ratio_in-progress',0);
+            this.set('health_ratio_in_progress',0);
             this.set('health_half_accepted_ratio',2);
             this.set('health_end_incompletion_ratio',2);
             this.set('health_end_acceptance_ratio',2);
