@@ -3,12 +3,74 @@
 <head>
     <title>Health Check</title>
     <!--  (c) 2013 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Mon Sep 23 2013 10:23:10 GMT-0700 (PDT) -->
+    <!--  Build Date: Wed Sep 25 2013 09:21:32 GMT-0700 (PDT) -->
     <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
 
     <script type="text/javascript">
         Rally.onReady(function() {
              
+Ext.define('TSDescriptions', {
+    singleton: true,
+    defaultF: function(value,metaData,record,rowIndex,colIndex,store,view){
+        return value;
+    },
+    get_description: function(column) {
+        var me = this;
+        
+        var data_index = column;
+        var data_name = null;
+        if ( typeof(column) !== "string" ) {
+            data_index = column.dataIndex;
+        } else {
+            column = {
+                dataIndex: data_index,
+                text: null
+            }
+        }
+        
+        if ( typeof this[data_index] == "string") {
+            var tpl = new Ext.XTemplate( me[data_index] );
+            
+            return tpl.apply(column);
+        } else {
+            return data_name;
+        }
+    },
+    health_churn: "<b>{text}</b> <br/><br/>A measure of the change in the iteration's scope.<br/><br/>" +
+         "It is defined as the standard deviation of the total scheduled <br/>" +
+         "into the sprint divided by the average daily total.",
+                  
+    health_churn_direction: "<b>{text}</b> is an indicator of the general direction of scope change.<br/><br/>" +
+        "It is determined by examining every day's change from the day before and adding or subtracting <br/>" +
+        "the delta to determine whether scope has been added more often than subtracted. (The first day of <br/>" +
+        "the iteration is excluded from this calculation.)",
+        
+    number_of_days_in_sprint: "<b>{text}</b> represents the number of full days in the iteration <br/>" +
+            "(Excluding weekends)",
+    health_ratio_estimated: "<b>{text}</b><br/><br/>" +
+        "<b>Description</b><br/><br/>" +
+        "Represents the ratio of work items (stories and defects) that have estimates.<br/><br/>" +
+        "<b>How it is calculated</b><br/><br/>" +
+        "Divide the number of work items (stories and defects) in the iteration that have a plan <br/>" +
+        "estimate that is not null by the total number of items in the iteration multiplied by 100. <br/><br/>" +
+        "<b>Coaching Tip</b><br/><br/>" + 
+        "If there is a very high percentage or stories without estimates, other measures will not <br/>" + 
+        "be meaningful.  This is really only useful for the beginning of an iteration, and perhaps <br/>" + 
+        "for an iteration in early flight, but not for an iteration that has ended.  The idea is to <br/>" + 
+        "catch this early in an iteration so other charts/graphs etc are useful for teams.  A good <br/>" + 
+        "practice is to have a ready backlog as and entrance criteria to an iteration planning session, <br/>" + 
+        "a ready backlog means three things, sized, ranked, and stories are elaborated sufficiently with <br/>" + 
+        "acceptance criteria to enable conversation and confirmation during planning.",
+    health_end_acceptance_ratio: "<b>{text}</b> is the percentage of items that were accepted before<br/>" +
+            "the iteration ended.",
+    health_ratio_in_progress: "<b>{text}</b> represents the average of the daily percentages of items<br/>" +
+            "marked as In Progress",
+    health_half_accepted_ratio:"<b>{text}</b> represents the point in the iteration where at least 50%<br/>" +
+            "of the scheduled items were accepted.  (If an accepted item rolls back in state, the search for a new<br/>" +
+            "halfway mark restarts.)",
+    health_end_incompletion_ratio:"<b>{text}</b>"
+
+});
 /*
  */
 Ext.define('Rally.technicalservices.logger',{
@@ -333,7 +395,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         /*  following values are calculated */
         {name:'child_count',type:'int',defaultValue:0},
         {name:'health_ratio_estimated',type:'float',defaultValue:0},
-        {name:'health_ratio_in-progress',type:'float',defaultValue:0},
+        {name:'health_ratio_in_progress',type:'float',defaultValue:0},
         {name:'health_half_accepted_ratio',type:'float',defaultValue:2},
         {name:'health_end_incompletion_ratio',type:'float',defaultValue:2},
         {name:'health_end_acceptance_ratio',type:'float',defaultValue:2},
@@ -347,7 +409,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
     ],
     addChild: function(child) {
         this.set('health_ratio_estimated',-1);
-        this.set('health_ratio_in-progress',-1);
+        this.set('health_ratio_in_progress',-1);
         this.set('health_half_accepted_ratio',-1);
         this.set('health_end_incompletion_ratio',-1);
         this.set('health_end_acceptance_ratio',-1);
@@ -393,7 +455,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         var me = this;
         this.daily_totals = {};
         if ( this.get('child_count')  > 0 ) {
-            this.set('health_ratio_in-progress',-1);
+            this.set('health_ratio_in_progress',-1);
         } else {
             Ext.Array.each(icfd, function(cf) {
                 var card_date = cf.get('CreationDate');
@@ -449,7 +511,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
         var ip_hash = this.getDailyTotalByState("In-Progress");
 
         if (!all_hash || !ip_hash) { 
-            this.set('health_ratio_in-progress',0); 
+            this.set('health_ratio_in_progress',0); 
         } else {
             var totals = [];
 
@@ -459,7 +521,7 @@ Ext.define('Rally.technicalservices.ProjectModel',{
                 
                 totals.push( day_ip/day_total );
             }
-            this.set('health_ratio_in-progress',Ext.util.Format.number(Ext.Array.mean(totals),"0.00"));
+            this.set('health_ratio_in_progress',Ext.util.Format.number(Ext.Array.mean(totals),"0.00"));
         }
     },
     /**
@@ -648,13 +710,13 @@ Ext.define('Rally.technicalservices.ProjectModel',{
     resetHealth: function() {
         if ( this.get('child_count')  > 0 ) {
             this.set('health_ratio_estimated',-1);
-            this.set('health_ratio_in-progress',-1);
+            this.set('health_ratio_in_progress',-1);
             this.set('health_half_accepted_ratio',-1);
             this.set('health_end_incompletion_ratio',-1);
             this.set('health_end_acceptance_ratio',-1);
         } else {
             this.set('health_ratio_estimated',0);
-            this.set('health_ratio_in-progress',0);
+            this.set('health_ratio_in_progress',0);
             this.set('health_half_accepted_ratio',2);
             this.set('health_end_incompletion_ratio',2);
             this.set('health_end_acceptance_ratio',2);
@@ -725,6 +787,12 @@ Ext.define('CustomApp', {
                 },
                 {
                     Name: 10
+                },
+                {
+                    Name: 15
+                },
+                {
+                    Name: 20
                 }
             ]
         });
@@ -1006,37 +1074,17 @@ Ext.define('CustomApp', {
         
         if ( this.grid ) { this.grid.destroy(); }
         
-        var column_listeners_churn = {
+        var column_listeners = {
             scope: this,
-            headerclick: function( ct, column, e, t, eOpts ) {
-                this.logger.log(ct, "column", column);
-                this.logger.log(ct, "e", e);
-                this.logger.log(ct, "t", t);
-                this.logger.log(ct, "eOpts", eOpts);
+            headerclick: function( ct, column, evt, target_element, eOpts ) {
                 if (this.popover){this.popover.destroy();}
                 this.popover = Ext.create('Rally.ui.popover.Popover',{
-                    target: Ext.get(t),
-                    items: [{xtype:'container',html:"Churn is a measure of the change in the iteration's scope.<br/><br/>" +
-                            "It is defined as the standard deviation of the total scheduled into the sprint divided by the " +
-                            "average daily total."}]
-                });
-                this.popover.show();
-            }
-        };
-        var column_listeners_churn_direction = {
-            scope: this,
-            headerclick: function( ct, column, e, t, eOpts ) {
-                this.logger.log(ct, "column", column);
-                this.logger.log(ct, "e", e);
-                this.logger.log(ct, "t", t);
-                this.logger.log(ct, "eOpts", eOpts);
-                if (this.popover){this.popover.destroy();}
-                this.popover = Ext.create('Rally.ui.popover.Popover',{
-                    target: Ext.get(t),
-                    items: [{xtype:'container',html:"Churn Direction is an indicator of the general direction of scope change.<br/><br/>" +
-                            "It is determined by examining every day's change from the day before and adding or subtracting <br/>" +
-                            "the delta to determine whether scope has been added more often than subtracted. (The first day of <br/>" +
-                            "the iteration is excluded from this calculation.)"}]
+                    target: Ext.get(target_element),
+                    items: [{
+                        cls: 'ts_popover_description',
+                        xtype:'container',
+                        html:TSDescriptions.get_description(column)
+                    }]
                 });
                 this.popover.show();
             }
@@ -1049,14 +1097,14 @@ Ext.define('CustomApp', {
                 {text:'Iteration',dataIndex:'iteration_name',flex: 2},
                 {text:'Start Date',dataIndex:'iteration_start_date',renderer:TSRenderers.shortDate},
                 {text:'End Date',dataIndex:'iteration_end_date',renderer:TSRenderers.shortDate},
-                {text:'# Days',dataIndex:'number_of_days_in_sprint'},
-                {text:'Estimation Ratio (Current)',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth},
-                {text:'Average Daily In-Progress',dataIndex:'health_ratio_in-progress',renderer: TSRenderers.inProgressHealth},
-                {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth},
-                {text:'Last Day Incompletion Ratio',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth},
-                {text:'Last Day Acceptance Ratio',dataIndex:'health_end_acceptance_ratio',renderer:TSRenderers.acceptanceHealth},
-                {text:'Churn',dataIndex:'health_churn',renderer:TSRenderers.churnHealth,listeners: column_listeners_churn },
-                {text:'Churn Direction',dataIndex:'health_churn_direction',renderer:TSRenderers.churnDirection,listeners: column_listeners_churn_direction}
+                {text:'# Days',dataIndex:'number_of_days_in_sprint',listeners: column_listeners},
+                {text:'Estimation Ratio (Current)',dataIndex:'health_ratio_estimated',renderer: TSRenderers.estimateHealth,listeners: column_listeners},
+                {text:'Average Daily In-Progress',dataIndex:'health_ratio_in_progress',renderer: TSRenderers.inProgressHealth,listeners: column_listeners},
+                {text:'50% Accepted Point', dataIndex:'health_half_accepted_ratio',renderer:TSRenderers.halfAcceptedHealth,listeners: column_listeners},
+                {text:'Last Day Incompletion Ratio',dataIndex:'health_end_incompletion_ratio',renderer:TSRenderers.incompletionHealth,listeners: column_listeners},
+                {text:'Last Day Acceptance Ratio',dataIndex:'health_end_acceptance_ratio',renderer:TSRenderers.acceptanceHealth,listeners: column_listeners},
+                {text:'Churn',dataIndex:'health_churn',renderer:TSRenderers.churnHealth,listeners: column_listeners },
+                {text:'Churn Direction',dataIndex:'health_churn_direction',renderer:TSRenderers.churnDirection,listeners: column_listeners}
             ]
         });
         this.down('#grid_box').add(this.grid);
@@ -1072,10 +1120,10 @@ Ext.define('CustomApp', {
     
     <style type="text/css">
 
-.app {
-     /* Add app styles here */
+.ts_popover_description {
+    background-color: white;
+    padding: 3px
 }
-
     </style>
 
 </head>

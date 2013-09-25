@@ -38,6 +38,12 @@ Ext.define('CustomApp', {
                 },
                 {
                     Name: 10
+                },
+                {
+                    Name: 15
+                },
+                {
+                    Name: 20
                 }
             ]
         });
